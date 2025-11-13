@@ -1,4 +1,3 @@
-// --- Dữ liệu Mẫu (Mock Data) ---
 let mockClientAccounts = [
     { id: 'K001', name: 'Nguyễn Văn Khách', email: 'khach@mail.com', password: '123', address: '101 Đường ABC, TP.HCM', phone: '0901234567', status: 'Hoạt động' },
     { id: 'K002', name: 'Phạm Thị D', email: 'd@mail.com', password: '123', address: '202 Đường XYZ, Hà Nội', phone: '0912345678', status: 'Hoạt động' },
@@ -838,8 +837,8 @@ function openProductModal(mode, productId = null) {
     document.getElementById('product-customMargin').value = '';
     document.getElementById('product-lowStockThreshold').value = '';
     document.getElementById('product-type').value = 'Món chính';
-    document.getElementById('product-image-file').value = ''; // Reset input file
-    document.getElementById('product-image-url-current').value = ''; // Reset trường ẩn URL
+    document.getElementById('product-image-file').value = '';
+    document.getElementById('product-image-url-current').value = '';
     previewProductImage('');
     document.getElementById('product-description').value = '';
     document.getElementById('product-code').disabled = false;
@@ -899,22 +898,18 @@ function previewProductImage(input) {
     const preview = document.getElementById('image-preview');
     const defaultUrl = 'https://placehold.co/200x200/cccccc/ffffff?text=No+Image';
     
-    // Nếu đầu vào là một đối tượng File
     if (input instanceof File) {
-        if (input.size > 2 * 1024 * 1024) { // Kiểm tra kích thước tệp (2MB)
+        if (input.size > 2 * 1024 * 1024) {
             alert('Kích thước tệp quá lớn. Vui lòng chọn tệp nhỏ hơn 2MB.');
             document.getElementById('product-image-file').value = '';
             preview.src = defaultUrl;
             return;
         }
-        // Tạo URL tạm thời cho ảnh được chọn
         preview.src = URL.createObjectURL(input);
     } 
-    // Nếu đầu vào là một chuỗi (URL hoặc Base64 đã lưu)
     else if (typeof input === 'string' && input.trim() !== '') {
         preview.src = input;
     } 
-    // Mặc định
     else {
         preview.src = defaultUrl;
     }
@@ -957,7 +952,6 @@ async function saveProduct() {
     }
     if (imageFile) {
         try {
-            // Chờ hàm chuyển đổi Base64 hoàn tất
             newImageUrl = await fileToBase64(imageFile); 
         } catch (error) {
             alert('Lỗi khi đọc tệp ảnh: ' + error.message);
@@ -1231,13 +1225,10 @@ function addImportItem() {
     const product = mockProducts.find(p => p.id === productId);
     if (!product) return;
 
-    // Kiểm tra xem sản phẩm đã có trong phiếu chưa
     const existingItemIndex = currentImportItems.findIndex(item => item.productId === productId);
     
     if (existingItemIndex !== -1) {
-        // Cập nhật số lượng và giá vốn
         currentImportItems[existingItemIndex].qty += qty;
-        // Có thể chọn giữ giá vốn cũ hoặc dùng giá vốn mới (ở đây tôi dùng giá vốn mới cho đơn giản)
         currentImportItems[existingItemIndex].cost = cost; 
     } else {
         currentImportItems.push({
@@ -1248,10 +1239,7 @@ function addImportItem() {
             total: qty * cost
         });
     }
-    
-    // Reset inputs
     document.getElementById('import-qty').value = 1;
-    // Để nguyên select và cost để tiện nhập tiếp
     
     renderImportItems();
 }
@@ -1281,7 +1269,7 @@ function saveNewImport() {
         id: id,
         date: date,
         total: total,
-        status: 'Đã nhập', // Mặc định là đã nhập ngay khi tạo
+        status: 'Đã nhập',
         details: currentImportItems.map(item => ({
             productId: item.productId,
             name: item.name,
@@ -1291,41 +1279,34 @@ function saveNewImport() {
         }))
     };
     
-    // 1. Cập nhật tồn kho và giá vốn (giả định đã nhập)
     newImport.details.forEach(item => {
         const product = mockProducts.find(p => p.id === item.productId);
         if (product) {
             product.stock += item.qty;
-            product.cost = item.cost; // Cập nhật giá vốn mới nhất
+            product.cost = item.cost;
         }
     });
 
     saveProductsToStorage();
-    
-    // 2. Lưu vào mockImports và LocalStorage
     mockImports.push(newImport);
     nextImportId++; 
     saveImportsToStorage();
     
     alert(`Đã thêm Phiếu nhập ${id} thành công! Tồn kho đã được cập nhật.`);
-    
-    // 3. Đóng Modal và tải lại danh sách
     closeModal('add-import-modal');
     renderImportManagement();
-    renderInventoryStatus(); // Cập nhật bảng tồn kho
+    renderInventoryStatus();
 }
 
 function toggleImportStatus(importId) {
     const impIndex = mockImports.findIndex(imp => imp.id === importId);
     if (impIndex !== -1) {
-        // ... (Logic xác định newStatus và statusText)
-
         if (confirm(`Bạn có muốn thay đổi trạng thái phiếu ${importId} từ "${currentStatus}" thành "${statusText}" không?`)) {
             mockImports[impIndex].status = newStatus;
             
-            saveImportsToStorage(); // ✅ LƯU TRỮ THAY ĐỔI VÀO LOCALSTORAGE
+            saveImportsToStorage();
             
-            loadImports(); // Tải lại bảng quản trị
+            loadImports();
             alert(`Đã cập nhật trạng thái phiếu ${importId} thành: ${statusText}.`);
         }
     }
@@ -1334,35 +1315,26 @@ function toggleImportStatus(importId) {
 // --- I.6 Quản lý giá bán ---
 function calculateSellingPrice(cost, marginPercent) {
     if (cost < 0 || marginPercent < 0) return 0;
-    // Tính giá bán làm tròn đến hàng nghìn gần nhất
     const rawPrice = cost * (1 + marginPercent / 100);
-    
-    // Bước sửa lỗi: Sử dụng toFixed(0) để loại bỏ hoàn toàn các lỗi dấu phẩy động
-    // và đảm bảo nó là số nguyên trước khi làm tròn lên hàng nghìn.
     const price = parseFloat(rawPrice.toFixed(0));
     return Math.ceil(price / 1000) * 1000;
 }
 function renderPriceManagement() {
     const tbody = document.getElementById('price-list');
     tbody.innerHTML = '';
-    
-    // Đổ dữ liệu vào Select Box Thiết lập Tỉ lệ lợi nhuận
     try {
         populatePriceManagementTypeSelect(); 
     } catch(e) {
         console.error("Lỗi khi tải Select Box Tỉ lệ Lợi nhuận:", e);
     }
-
-    // 1. Tải danh sách sản phẩm vào bảng tra cứu
     mockProducts.forEach(p => {
         const margin = (p.customMargin !== undefined && !isNaN(p.customMargin))
-            ? p.customMargin // Ưu tiên giá trị Tùy chỉnh (45)
+            ? p.customMargin
             : (profitMargins[p.type] || 0);
 
         const calculatedPrice = calculateSellingPrice(p.cost, margin);
         const currentPrice = calculatedPrice;
-        // Màu sắc cảnh báo nếu giá bán hiện tại khác giá bán đề xuất
-        const priceStyle = 'color: #27ae60;';                 // Giá đã đồng bộ (màu xanh)
+        const priceStyle = 'color: #27ae60;';
 
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -1394,33 +1366,24 @@ function updatePriceManagement() {
         alert('Vui lòng chọn loại sản phẩm và nhập tỉ lệ lợi nhuận hợp lệ (>= 0).');
         return;
     }
-
-    // 1. Cập nhật tỉ lệ lợi nhuận mới
     profitMargins[productType] = newMargin;
-    
-    // 2. Cập nhật Giá bán cho TẤT CẢ sản phẩm thuộc loại này
     let updatedCount = 0;
     mockProducts.forEach(p => {
         if (p.type === productType) {
-            p.customMargin = undefined; // Xóa Tỉ lệ tùy chỉnh nếu có
+            p.customMargin = undefined;
             const newPrice = calculateSellingPrice(p.cost, newMargin);
             p.price = newPrice;
             updatedCount++;
         }
     });
-
-    // 3. Lưu dữ liệu sản phẩm đã thay đổi
     saveProductsToStorage();
     
     alert(`Đã cập nhật tỉ lệ lợi nhuận ${productType} thành ${newMargin}% và cập nhật giá bán cho ${updatedCount} sản phẩm!`);
-    
-    // 4. Tải lại cả 2 giao diện
     renderPriceManagement();
-    searchProducts(); // Đồng bộ giá bán mới sang Client
+    searchProducts();
 }
 function populatePriceManagementTypeSelect() {
     const select = document.getElementById('price-type-select');
-    // Lấy các loại sản phẩm duy nhất từ mockProducts
     const uniqueTypes = [...new Set(mockProducts.map(p => p.type))].filter(t => t);
     
     select.innerHTML = '<option value="">-- Chọn Loại SP --</option>'; 
@@ -1430,14 +1393,10 @@ function populatePriceManagementTypeSelect() {
         option.textContent = `${type} (Hiện tại: ${profitMargins[type] || 0}%)`;
         select.appendChild(option);
     });
-    
-    // Đặt sự kiện để điền % hiện tại khi chọn loại sản phẩm
     select.onchange = function() {
         const currentMargin = profitMargins[select.value] || 0;
         document.getElementById('price-margin-input').value = currentMargin;
     };
-    
-    // Kích hoạt sự kiện onchange lần đầu tiên
     if (select.options.length > 1) {
         select.dispatchEvent(new Event('change'));
     }
@@ -1445,8 +1404,6 @@ function populatePriceManagementTypeSelect() {
 function openEditProductMarginModal(productId) {
     const product = mockProducts.find(p => p.id === productId);
     if (!product) return;
-
-    // Lấy % hiện tại: Ưu tiên Custom Margin, nếu không dùng Margin chung theo Type
     const currentMargin = product.customMargin !== undefined ? product.customMargin : (profitMargins[product.type] || 0);
     
     document.getElementById('edit-margin-product-id').value = productId;
@@ -1469,23 +1426,15 @@ function saveProductCustomMargin() {
     
     const product = mockProducts.find(p => p.id === productId);
     if (!product) return;
-    
-    // 1. Lưu Tỉ lệ lợi nhuận tùy chỉnh
     product.customMargin = newMargin;
-    
-    // 2. Cập nhật Giá bán cho sản phẩm này
     const newPrice = calculateSellingPrice(product.cost, newMargin);
     product.price = newPrice;
-    
-    // 3. Lưu dữ liệu đã thay đổi
     saveProductsToStorage();
     
     alert(`Đã cập nhật % lợi nhuận SP ${product.id} thành ${newMargin}% và giá bán mới là ${newPrice.toLocaleString('vi-VN')} đ.`);
-    
-    // 4. Đóng Modal và tải lại giao diện
     closeModal('edit-margin-modal');
-    renderPriceManagement(); // Cập nhật bảng Admin
-    searchProducts(); // Cập nhật giá bán mới sang Client
+    renderPriceManagement();
+    searchProducts();
 }
 
 
@@ -1496,11 +1445,8 @@ function filterAdminOrders() {
     const statusFilter = document.getElementById('order-status-filter').value;
 
     let filteredOrders = mockOrders;
-    
-    // 1. Lọc theo Khoảng Ngày Đặt hàng
     if (startDateStr || endDateStr) {
         const startDate = startDateStr ? new Date(startDateStr) : null;
-        // Thêm 1 ngày vào ngày kết thúc để bao gồm cả đơn hàng của ngày đó
         const endDate = endDateStr ? new Date(new Date(endDateStr).setHours(23, 59, 59, 999)) : null;
 
         filteredOrders = filteredOrders.filter(order => {
@@ -1509,24 +1455,18 @@ function filterAdminOrders() {
             let matchesEnd = true;
 
             if (startDate) {
-                // Chỉ so sánh phần ngày (loại bỏ giờ)
                 matchesStart = orderDate >= startDate; 
             }
             if (endDate) {
-                // Kiểm tra orderDate nhỏ hơn hoặc bằng cuối ngày kết thúc
                 matchesEnd = orderDate <= endDate;
             }
             
             return matchesStart && matchesEnd;
         });
     }
-
-    // 2. Lọc theo Tình trạng Đơn hàng
     if (statusFilter !== 'all') {
         filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
     }
-
-    // Tải lại bảng với danh sách đã lọc
     renderAdminOrders(filteredOrders); 
 }
 
@@ -1534,16 +1474,12 @@ function resetOrderFilters() {
     document.getElementById('order-start-date').value = '';
     document.getElementById('order-end-date').value = '';
     document.getElementById('order-status-filter').value = 'all';
-    
-    // Tải lại bảng (renderAdminOrders sẽ hiển thị toàn bộ mockOrders mặc định)
     renderAdminOrders(); 
 }
 
 function renderAdminOrders(ordersList = mockOrders){
     const tbody = document.getElementById('admin-order-list');
     tbody.innerHTML = '';
-    
-    // Sắp xếp theo ngày đặt hàng gần nhất
     ordersList.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     if (ordersList.length === 0) {
@@ -1554,8 +1490,6 @@ function renderAdminOrders(ordersList = mockOrders){
     ordersList.forEach(order => {
         let statusText = order.status;
         let statusClass = 'status-new';
-
-        // Ánh xạ trạng thái và màu sắc
         if (statusText === 'new') { statusText = 'Mới'; statusClass = 'status-new'; }
         else if (statusText === 'processing') { statusText = 'Đang xử lý'; statusClass = 'status-warning'; }
         else if (statusText === 'delivered') { statusText = 'Đã giao'; statusClass = 'status-success'; }
@@ -1580,10 +1514,8 @@ function renderAdminOrders(ordersList = mockOrders){
 function viewAdminOrderDetails(orderId) {
     const order = mockOrders.find(o => o.id === orderId);
     if (!order) return;
-
-    // 1. Cập nhật thông tin tóm tắt
     const summaryDiv = document.getElementById('order-detail-summary');
-    if (!summaryDiv) { // 🎯 KIỂM TRA AN TOÀN
+    if (!summaryDiv) {
         console.error("Lỗi: Không tìm thấy phần tử 'order-detail-summary' trong DOM.");
         return; 
     }
@@ -1594,8 +1526,7 @@ function viewAdminOrderDetails(orderId) {
         <p><strong>Địa chỉ Giao:</strong> ${order.delivery || 'N/A'}</p>
         <p><strong>Thanh toán:</strong> ${order.payment === 'cod' ? 'COD' : (order.payment === 'transfer' ? 'Chuyển khoản' : 'Trực tuyến')}</p>
     `;
-
-    // 2. Cập nhật danh sách sản phẩm
+    
     const productsTbody = document.getElementById('order-products-list');
     if (!productsTbody) {
         console.error("Lỗi: Không tìm thấy phần tử 'order-products-list' trong DOM.");
@@ -1615,8 +1546,6 @@ function viewAdminOrderDetails(orderId) {
         `;
         productsTbody.appendChild(row);
     });
-
-    // 3. Cập nhật tổng tiền và ID
     const totalDisplay = document.getElementById('order-total-display');
     const idDisplay = document.getElementById('order-id-display');
     const modalTitle = document.getElementById('order-modal-title');
@@ -1626,7 +1555,6 @@ function viewAdminOrderDetails(orderId) {
     } else {
         console.error("Lỗi: Không tìm thấy 'order-total-display'");
     }
-    
     if (idDisplay) {
         idDisplay.textContent = order.id;
     } else {
@@ -1638,8 +1566,6 @@ function viewAdminOrderDetails(orderId) {
     } else {
         console.error("Lỗi: Không tìm thấy 'order-modal-title'");
     }
-
-    // 4. Mở Modal
     const modal = document.getElementById('admin-order-detail-modal');
     if (modal) {
         modal.style.display = 'flex';
@@ -1647,46 +1573,106 @@ function viewAdminOrderDetails(orderId) {
         console.error("Lỗi: Không tìm thấy modal 'admin-order-detail-modal'");
         alert("Lỗi: Không thể mở modal chi tiết đơn hàng.");
     }
-    // 5. LƯU ORDER ID VÀO DATASET để sử dụng cho nút Cập nhật
     if (modal) {
         modal.dataset.currentOrderId = orderId;
     }
-}
-function promptUpdateOrderStatus(orderId) {
-    const order = mockOrders.find(o => o.id === orderId);
-    if (!order) return;
-    
-    const validStatuses = ['new', 'processing', 'delivered', 'cancelled'];
-    const newStatus = prompt(`Cập nhật trạng thái ĐH ${orderId}. Trạng thái hiện tại: ${order.status}.\nNhập (${validStatuses.join(', ')}):`);
-    
-    if (newStatus && validStatuses.includes(newStatus.trim())) {
-        order.status = newStatus.trim();
+
+    const totalOrder = order.total.toLocaleString('vi-VN') + ' đ';
+
+    const modalContent = document.querySelector('#admin-order-detail-modal .modal-content');
+
+    const footerHtml = `
+        <div style="text-align: right; margin-top: 20px;">
+            <p style="font-size: 1.2em; font-weight: bold;">Tổng tiền: <span id="order-total-display" style="color: #E74C3C;">${totalOrder}</span></p>
+            <div style="margin-top: 15px;">
+                <button class="btn btn-primary" onclick="openUpdateOrderStatusModal('${order.id}')">Cập nhật Trạng thái</button>
+                <button class="btn btn-secondary" onclick="closeModal('admin-order-detail-modal')">Đóng</button>
+            </div>
+        </div>
+    `;
+
+    const productsHtml = productsTbody.innerHTML; 
+
+    modalContent.innerHTML = `
+        <span class="close-btn" onclick="closeModal('admin-order-detail-modal')">&times;</span>
         
-        saveOrdersToStorage();
-        // Cập nhật giao diện sau khi thay đổi
-        renderAdminOrders();
+        <h4 id="order-modal-title">Chi tiết Đơn hàng <span id="order-id-display" style="color: #E74C3C;">${order.id}</span></h4>
         
-        // Đóng Modal chi tiết đơn hàng (nếu đang mở)
-        closeModal('admin-order-detail-modal'); 
-        
-        alert(`Trạng thái ĐH ${orderId} đã được cập nhật thành: ${newStatus.trim()}`);
-    } else if (newStatus !== null) {
-        alert('Trạng thái không hợp lệ.');
-    }
+        ${summaryDiv.outerHTML}
+
+        <div class="data-table">
+            <h5 style="padding: 10px 0; font-weight: 600;">Danh sách Sản phẩm</h5>
+            <table>
+                <thead><tr><th>Tên SP</th><th>SL</th><th>Giá</th><th>Thành tiền</th></tr></thead>
+                <tbody id="order-products-list">
+                    ${productsHtml}
+                </tbody>
+            </table>
+        </div>
+        ${footerHtml}
+    `;
+
+    document.getElementById('admin-order-detail-modal').dataset.currentOrderId = orderId;
+    document.getElementById('admin-order-detail-modal').style.display = 'flex';
 }
 
-// HÀM MỚI: Cập nhật trạng thái từ Modal chi tiết
-function updateOrderStatusFromModal() {
-    const modal = document.getElementById('admin-order-detail-modal');
-    const orderId = modal ? modal.dataset.currentOrderId : null;
+function openUpdateOrderStatusModal(orderId) {
+    const order = mockOrders.find(o => o.id === orderId);
+    if (!order) return;
+    closeModal('admin-order-detail-modal'); 
+    let statusText = order.status;
+    let statusClass = 'status-new';
+    if (statusText === 'new') { statusText = 'Mới đặt'; statusClass = 'status-new'; }
+    else if (statusText === 'processing') { statusText = 'Đang xử lý'; statusClass = 'status-warning'; }
+    else if (statusText === 'delivered') { statusText = 'Đã giao'; statusClass = 'status-success'; }
+    else if (statusText === 'cancelled') { statusText = 'Đã hủy'; statusClass = 'status-danger'; }
+
+    document.getElementById('update-order-id-display').textContent = order.id;
+    const statusDisplay = document.getElementById('current-order-status-display');
+    statusDisplay.textContent = statusText;
+    statusDisplay.className = `status-badge ${statusClass}`;
+    document.getElementById('new-order-status').value = order.status;
+
+    const modal = document.getElementById('update-order-status-modal');
+    modal.dataset.currentOrderId = orderId;
+
+    modal.style.display = 'flex';
+}
+
+function updateOrderStatusFromModal(fromModalButton = false) {
+    let orderId;
+    let newStatus;
     
-    if (!orderId) {
-        alert('Lỗi: Không xác định được ID đơn hàng!');
-        console.error('Không tìm thấy orderId trong modal dataset');
+    if (fromModalButton) {
+        const modal = document.getElementById('update-order-status-modal');
+        orderId = modal.dataset.currentOrderId;
+        newStatus = document.getElementById('new-order-status').value;
+    } else {
+        alert('Lỗi: Hàm này không được gọi từ Modal cập nhật trạng thái.');
+        return;
+    }
+
+    if (!orderId || !newStatus) {
+        alert('Lỗi: Không tìm thấy ID đơn hàng hoặc trạng thái mới.');
         return;
     }
     
-    promptUpdateOrderStatus(orderId);
+    const order = mockOrders.find(o => o.id === orderId);
+    if (!order) return;
+    
+    order.status = newStatus;
+    
+    saveOrdersToStorage();
+    
+    if (fromModalButton) {
+        closeModal('update-order-status-modal');
+    }
+    renderAdminOrders();
+    alert(`Trạng thái Đơn hàng ${orderId} đã được cập nhật thành: ${newStatus}`);
+}
+
+function promptUpdateOrderStatus(orderId) {
+    openUpdateOrderStatusModal(orderId);
 }
 
 // --- I.8. Quản lý Tồn kho (Cảnh báo & Tra cứu) ---
@@ -1698,14 +1684,9 @@ function renderInventoryStatus() {
     const sortedProducts = [...mockProducts].sort((a, b) => {
         const isALow = a.stock <= a.lowStockThreshold;
         const isBLow = b.stock <= b.lowStockThreshold;
-        
-        // Nếu cả hai đều thiếu, sắp xếp theo số lượng tăng dần
         if (isALow && isBLow) return a.stock - b.stock;
-        // Sản phẩm sắp hết hàng (A) lên trước
         if (isALow) return -1;
-        // Sản phẩm sắp hết hàng (B) lên trước
         if (isBLow) return 1;
-        // Nếu không, sắp xếp theo id
         return a.id.localeCompare(b.id); 
     });
 
@@ -1739,7 +1720,6 @@ function renderInventoryStatus() {
         tbody.appendChild(row);
     });
 
-    // Cảnh báo sản phẩm sắp hết hàng
     const alertDiv = document.getElementById('low-stock-alert');
     if (lowStockCount > 0) {
         alertDiv.style.display = 'block';
@@ -1749,21 +1729,13 @@ function renderInventoryStatus() {
     }
 }
 
-// Hàm Mở Modal Nhập hàng nhanh
+
 function openImportModalForProduct(productId) {
     const product = mockProducts.find(p => p.id === productId);
     if (!product) return;
-    
-    // 1. Mở Modal Thêm Phiếu nhập mới
     openAddImportModal(); 
-    
-    // 2. Tự động chọn sản phẩm đó trong Select box
     document.getElementById('import-product-select').value = productId;
-    
-    // 3. Kích hoạt sự kiện onchange để tải giá vốn hiện tại
     document.getElementById('import-product-select').dispatchEvent(new Event('change'));
-    
-    // 4. Nhấn mạnh rằng Admin nên nhập số lượng
     document.getElementById('import-qty').focus(); 
     
     alert(`Đã chọn sản phẩm ${product.name}. Vui lòng nhập Số lượng và Giá Vốn.`);
@@ -1774,9 +1746,7 @@ function viewInventoryHistory(productId) {
     if (!product) return;
     
     const productName = product.name;
-    let initialStock = product.stock; // Bắt đầu từ tồn kho hiện tại (đã được tính toán)
-    
-    // --- 1. TỔNG HỢP LỊCH SỬ NHẬP ---
+
     const importHistory = [];
     mockImports.forEach(imp => {
         const item = imp.details.find(d => d.productId === productId);
@@ -1792,37 +1762,24 @@ function viewInventoryHistory(productId) {
         }
     });
 
-    // --- 2. TỔNG HỢP LỊCH SỬ XUẤT (Bán hàng) ---
     const outputHistory = [];
     mockOrders.forEach(order => {
-        const item = order.products.find(p => p.id === productId); // Giả định product.id được lưu trong order.products
-        
-        // Cần kiểm tra nếu order.products có chứa ID sản phẩm. 
-        // LƯU Ý: mockOrders hiện tại chỉ lưu tên sản phẩm, không phải ID.
-        // Tạm thời, tôi sẽ lọc theo TÊN sản phẩm để mô phỏng.
         const orderItem = order.products.find(p => p.name === productName); 
         
-        if (orderItem && order.status === 'delivered') { // Chỉ tính là xuất khi đã giao
+        if (orderItem && order.status === 'delivered') {
              outputHistory.push({
                 date: order.date,
                 type: 'Xuất (Bán)',
                 status: order.status,
-                qty: -orderItem.qty, // Số lượng âm (xuất)
-                cost: orderItem.price, // Giá bán (không phải giá vốn)
+                qty: -orderItem.qty,
+                cost: orderItem.price,
                 orderId: order.id
             });
         }
     });
-    
-    // --- 3. KẾT HỢP VÀ SẮP XẾP LỊCH SỬ THEO THỜI GIAN ---
+
     let combinedHistory = [...importHistory, ...outputHistory];
-    combinedHistory.sort((a, b) => new Date(b.date) - new Date(a.date)); // Sắp xếp giảm dần theo ngày
-    
-    // --- 4. TẠO HTML VÀ TÍNH TỒN KHO LUỸ KẾ (Đảo ngược) ---
-    
-    // Để tính tồn kho lũy kế chính xác, chúng ta cần duyệt từ lịch sử cũ nhất (tăng dần theo ngày)
-    // Nhưng vì dữ liệu giả lập không đầy đủ, chúng ta sẽ hiển thị tồn kho hiện tại
-    
+    combinedHistory.sort((a, b) => new Date(b.date) - new Date(a.date));
     let historyHtml = `
         <h4 style="margin-top: 15px; color: #2980b9;">Lịch sử Nhập - Xuất</h4>
         <div class="data-table" style="max-height: 400px; overflow-y: auto;">
@@ -1858,7 +1815,6 @@ function viewInventoryHistory(productId) {
     
     historyHtml += `</tbody></table></div>`;
 
-    // --- 5. HIỂN THỊ MODAL ---
     const modalContent = document.getElementById('inventory-history-content');
     modalContent.innerHTML = `
         <span class="close-btn" onclick="closeModal('inventory-history-modal')">&times;</span>
@@ -1881,7 +1837,6 @@ function viewInventoryHistory(productId) {
 }
 
 // --- II.1. Quản lý Đăng nhập / Đăng ký trong Modal ---
-
 function clientLoginModal() {
     const email = document.getElementById('client-login-email').value;
     const password = document.getElementById('client-login-password').value;
@@ -1895,8 +1850,6 @@ function clientLoginModal() {
             alert('Tài khoản này đã bị khóa!');
             return;
         }
-
-        // Cập nhật thông tin client hiện tại
         currentClient.id = account.id;
         currentClient.name = account.name;
         currentClient.email = account.email;
@@ -1941,14 +1894,13 @@ function clientRegisterModal() {
         return;
     }
 
-    // Tạo ID mới (giả lập)
     const newId = 'K' + String(mockClientAccounts.length + 1).padStart(3, '0');
     
     const newAccount = {
         id: newId,
         name: name,
         email: email,
-        password: password, // Lưu mật khẩu dưới dạng plain text cho mục đích demo
+        password: password,
         address: 'Địa chỉ chưa cập nhật',
         phone: 'Chưa cập nhật',
         status: 'Hoạt động'
@@ -1958,8 +1910,7 @@ function clientRegisterModal() {
     saveClientAccountsToStorage();
 
     alert(`Đăng ký thành công! Chào mừng ${newAccount.name}.\nBạn có thể đăng nhập ngay.`);
-    
-    // Xóa form và chuyển sang Đăng nhập
+
     document.getElementById('client-register-name').value = '';
     document.getElementById('client-login-email').value = email; 
     document.getElementById('client-register-email').value = ''; 
@@ -1991,9 +1942,7 @@ function clientLogout(event) {
 function loadClientSession() {
     const storedClient = localStorage.getItem(CURRENT_CLIENT_KEY);
     if (storedClient) {
-        // Nếu có dữ liệu, phân tích cú pháp và gán cho currentClient
         const clientData = JSON.parse(storedClient);
-        // Đảm bảo dữ liệu được tải lại hoàn toàn, bao gồm cả isLoggedIn
         currentClient = clientData; 
     }
 }
@@ -2006,23 +1955,16 @@ function showSlides(n) {
     let i;
     let slides = document.getElementsByClassName("mySlides");
     let dots = document.getElementsByClassName("dot");
-    
-    // Xử lý index tràn
     if (n > slides.length) {slideIndex = 1}    
     if (n < 1) {slideIndex = slides.length}
-    
-    // Ẩn tất cả các slide
     for (i = 0; i < slides.length; i++) {
         slides[i].style.display = "none";  
         slides[i].classList.remove("active-slide");
     }
-    
-    // Bỏ active khỏi tất cả các chấm tròn
     for (i = 0; i < dots.length; i++) {
         dots[i].className = dots[i].className.replace(" active", "");
     }
     
-    // Hiển thị slide hiện tại và chấm tròn tương ứng
     if (slides[slideIndex-1]) {
         slides[slideIndex-1].style.display = "block";  
         slides[slideIndex-1].classList.add("active-slide");
@@ -2032,77 +1974,65 @@ function showSlides(n) {
     }
 }
 
-// Hàm chuyển slide (Tiến/Lùi)
 function plusSlides(n) {
     showSlides(slideIndex += n);
 }
 
-// Hàm chuyển đến slide cụ thể khi click chấm tròn
 function currentSlide(n) {
     showSlides(slideIndex = n);
 }
 
-// Hàm tự động trượt
 function autoShowSlides() {
     let i;
     let slides = document.getElementsByClassName("mySlides");
-    if (slides.length === 0) return; // Thoát nếu không có slide
-    
-    // Tăng slideIndex hoặc reset về 1
+    if (slides.length === 0) return;
+
     slideIndex++;
     if (slideIndex > slides.length) {slideIndex = 1}    
 
-    // Reset hiển thị
     for (i = 0; i < slides.length; i++) {
         slides[i].style.display = "none";  
         slides[i].classList.remove("active-slide");
     }
-    
-    // Hiển thị slide mới
+
     slides[slideIndex-1].style.display = "block";
     slides[slideIndex-1].classList.add("active-slide");
-    
-    // Cập nhật chấm tròn (Tùy chọn: cần gọi lại showSlides để cập nhật chấm tròn)
+
     showSlides(slideIndex);
     
-    setTimeout(autoShowSlides, 5000); // Trượt sau mỗi 5 giây
+    setTimeout(autoShowSlides, 5000);
 }
-// HÀM MỚI: Lọc sản phẩm theo Category (Loại đồ ăn)
+
 function filterByCategory(type, shouldScroll, event) {
     if (event) event.preventDefault();
     document.getElementById('search-name').value = '';
-    document.getElementById('search-category').value = type; // Đặt giá trị category hiện tại
+    document.getElementById('search-category').value = type;
     document.getElementById('search-price-min').value = '';
     document.getElementById('search-price-max').value = '';
     const currentViewId = document.querySelector('.client-view.active').id;
     if (currentViewId !== 'home') {
         setActiveView('home'); 
     }
-    
-    // Đặt lại trang hiện tại về 1
+
     currentPage = 1;
 
-    // Loại bỏ active khỏi tất cả các category link
     document.querySelectorAll(".category-link").forEach(link => link.classList.remove('active'));
 
-    // Tạo map tra cứu trạng thái Category
     const categoryStatusMap = mockCategories.reduce((map, cat) => {
         map[cat.name] = cat.status;
         return map;
     }, {});
 
     let filtered = mockProducts.filter(p => {
-        // 1. Phải là sản phẩm 'Hiện'
+
         const isProductVisible = p.status === 'Hiện';
-        // 2. Phải thuộc loại sản phẩm 'Hiện'
+
         const isCategoryVisible = categoryStatusMap[p.categoryType] === 'Hiện';
-        
-        // 3. Nếu là 'all', chỉ cần sản phẩm và loại sản phẩm đều 'Hiện'
+
         if (type === 'all') {
             return isProductVisible && isCategoryVisible;
         } 
-        
-        // 4. Nếu là loại cụ thể, phải khớp loại AND (sản phẩm & loại đều 'Hiện')
+
         const matchesCategory = p.categoryType === type;
         return matchesCategory && isProductVisible && isCategoryVisible;
     });
@@ -2117,19 +2047,22 @@ function filterByCategory(type, shouldScroll, event) {
     }
 
     renderClientProducts(filtered);
-    
-    // Cuộn mượt đến phần lưới sản phẩm
+
     if (shouldScroll) {
         if (type === 'all') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         } else {
-            // CUỘN ĐẾN LƯỚI SẢN PHẨM (cho các danh mục cụ thể)
             document.querySelector('#product-grid-section').scrollIntoView({behavior: 'smooth'});
         }
     }
 }
 
-// HÀM MỚI: Cập nhật hiển thị Phân trang
+
+// --- BIẾN PHÂN TRANG ---
+let productsPerPage = 8;
+let currentPage = 1;
+let filteredProductsList = mockProducts;
+
 function updatePaginationDisplay(current, total, totalItems) {
     console.log(`PAGINATION: Trang hiện tại: ${current} / Tổng trang: ${total}`);
     const paginationDiv = document.querySelector('.pagination');
@@ -2140,10 +2073,9 @@ function updatePaginationDisplay(current, total, totalItems) {
 
     if (totalItems === 0 || total <= 1) {
         paginationDiv.style.display = 'none';
-        // Vẫn gán giá trị 1/1 để reset UI
+
         pageSpan.textContent = `Trang 1 / 1`; 
-        
-        // Quan trọng: Vô hiệu hóa nút để đảm bảo không có lỗi click
+
         if (prevButton) prevButton.disabled = true;
         if (nextButton) nextButton.disabled = true;
         return;
@@ -2153,50 +2085,32 @@ function updatePaginationDisplay(current, total, totalItems) {
     
     if (pageSpan) pageSpan.textContent = `Trang ${current} / ${total}`;
 
-    // Vô hiệu hóa nút
     prevButton.disabled = current === 1;
     nextButton.disabled = current === total;
 }
 
-// HÀM MỚI: Chuyển trang
 function changePage(direction) {
     const totalPages = Math.ceil(filteredProductsList.length / productsPerPage);
-    let oldPage = currentPage; // Lưu trang cũ để so sánh
+    let oldPage = currentPage;
 
-    // Logic thay đổi currentPage
     if (direction === 'prev' && currentPage > 1) {
         currentPage = Math.max(1, currentPage - 1);
     } else if (direction === 'next' && currentPage < totalPages) {
         currentPage = Math.min(totalPages, currentPage + 1);
     }
 
-    // Chỉ gọi render khi trang đã thay đổi hoặc là lần gọi đầu tiên
     if (currentPage !== oldPage) {
-        // Gọi renderClientProducts() để nó sử dụng currentPage mới
         renderClientProducts(filteredProductsList); 
     }
-    
-    // Cuộn lên đầu
     document.querySelector('#product-grid-section').scrollIntoView({behavior: 'smooth'});
 }
 
-// --- BIẾN PHÂN TRANG ---
-let productsPerPage = 8;
-let currentPage = 1;
-let filteredProductsList = mockProducts;
-
-
 function renderClientProducts(initialProducts = mockProducts) {
-    // Lọc chỉ lấy sản phẩm có status !== 'Ẩn'
     filteredProductsList = initialProducts.filter(p => p.status !== 'Ẩn');
-    
     const totalPages = Math.ceil(filteredProductsList.length / productsPerPage);
-    
-    // Đảm bảo currentPage không vượt quá giới hạn
     if (currentPage > totalPages) {
         currentPage = totalPages > 0 ? totalPages : 1;
     }
-    
     const startIndex = (currentPage - 1) * productsPerPage;
     const endIndex = startIndex + productsPerPage;
     const productsToRender = filteredProductsList.slice(startIndex, endIndex);
@@ -2205,15 +2119,13 @@ function renderClientProducts(initialProducts = mockProducts) {
     grid.innerHTML = '';
     
     if (productsToRender.length === 0 && filteredProductsList.length > 0) {
-        // Nếu trang hiện tại rỗng nhưng tổng danh sách có sản phẩm, lùi về trang 1
         currentPage = 1;
-        renderClientProducts(initialProducts); // Tải lại trang 1
+        renderClientProducts(initialProducts);
         return;
     }
     
     if (productsToRender.length === 0) {
         grid.innerHTML = '<p style="text-align: center; grid-column: 1 / -1;">Không tìm thấy sản phẩm nào.</p>';
-        // Cập nhật hiển thị phân trang
         updatePaginationDisplay(1, 1, 0); 
         return;
     }
@@ -2234,8 +2146,6 @@ function renderClientProducts(initialProducts = mockProducts) {
         `;
         grid.appendChild(card);
     });
-
-    // Cập nhật hiển thị phân trang
     updatePaginationDisplay(currentPage, totalPages, filteredProductsList.length);
 }
 
@@ -2246,9 +2156,7 @@ function viewProductDetail(productId) {
     const margin = product.customMargin !== undefined ? product.customMargin : (profitMargins[product.type] || 0);
     const calculatedPrice = calculateSellingPrice(product.cost, margin);
 
-    const detailContent = document.getElementById('product-detail-content'); // Đã thay đổi ID: content của modal mới
-    
-    // Đảm bảo Modal content được làm sạch
+    const detailContent = document.getElementById('product-detail-content');
     detailContent.innerHTML = '';
 
     detailContent.innerHTML = `
@@ -2276,26 +2184,21 @@ function viewProductDetail(productId) {
             </div>
         </div>
     `;
-    
-    // HIỂN THỊ MODAL MỚI
     document.getElementById('product-detail-modal').classList.add('active'); 
 }
 
-// HÀM MỚI: Thêm vào giỏ hàng từ trang chi tiết
 function addToCartDetail(productId) {
     const qtyInput = document.getElementById(`qty-${productId}`);
     const qty = parseInt(qtyInput.value);
     
     if (qty > 0) {
         addToCart(productId, qty);
-        // Đóng modal sau khi thêm thành công
         closeProductDetailModal(); 
     } else {
         alert("Số lượng phải lớn hơn 0.");
     }
 }
 
-// HÀM MỚI: Đặt hàng ngay (bỏ qua giỏ hàng, chuyển thẳng đến thanh toán)
 function orderNow(productId) {
     const qtyInput = document.getElementById(`qty-${productId}`);
     const qty = parseInt(qtyInput.value);
@@ -2314,10 +2217,8 @@ function orderNow(productId) {
         return;
     }
 
-    // Xóa giỏ hàng hiện tại (mô phỏng đặt hàng nhanh)
     cart = [];
-    
-    // Thêm món này vào giỏ hàng
+
     cart.push({ 
         id: productId, 
         name: product.name, 
@@ -2326,16 +2227,16 @@ function orderNow(productId) {
     });
 
     updateCartDisplay();
-    closeProductDetailModal(); // Đóng modal chi tiết
-    showCartModal(); // Mở giỏ hàng modal
+    closeProductDetailModal();
+    showCartModal();
 }
 
 
 function searchProducts() {
     const nameQuery = document.getElementById('search-name').value.toLowerCase();
-    const categoryQuery = document.getElementById('search-category').value; // Lấy giá trị Category
-    const priceMin = parseInt(document.getElementById('search-price-min').value) || 0; // Giá tối thiểu (hoặc 0 nếu trống)
-    const priceMax = parseInt(document.getElementById('search-price-max').value) || Infinity; // Giá tối đa (hoặc Infinity nếu trống)
+    const categoryQuery = document.getElementById('search-category').value;
+    const priceMin = parseInt(document.getElementById('search-price-min').value) || 0;
+    const priceMax = parseInt(document.getElementById('search-price-max').value) || Infinity;
 
     const categoryStatusMap = mockCategories.reduce((map, cat) => {
         map[cat.name] = cat.status;
@@ -2343,31 +2244,16 @@ function searchProducts() {
     }, {});
 
     const filteredProducts = mockProducts.filter(p => {
-        // 1. 🎯 BẮT BUỘC: Tính giá bán động trước khi lọc!
         const margin = p.customMargin !== undefined ? p.customMargin : (profitMargins[p.type] || 0);
         const sellingPrice = calculateSellingPrice(p.cost, margin);
-
-        // Lọc 2: Theo Tên
         const matchesName = p.name.toLowerCase().includes(nameQuery);
-        
-        // Lọc 3: Theo Khoảng giá
         const matchesPrice = sellingPrice >= priceMin && sellingPrice <= priceMax;
-        
-        // 4. Lọc theo TRẠNG THÁI SẢN PHẨM (chỉ lấy 'Hiện')
         const isProductVisible = p.status !== 'Ẩn';
-
-        // 5. Lọc theo TRẠNG THÁI LOẠI SẢN PHẨM (chỉ lấy 'Hiện')
         const categoryName = p.categoryType;
         const isCategoryVisible = categoryStatusMap[categoryName] === 'Hiện';
-
-        // 6. Lọc theo Danh mục (nếu có chọn bộ lọc)
         const matchesCategoryFilter = categoryQuery === 'all' || categoryName === categoryQuery;
-
-        // Sản phẩm phải thỏa mãn: Hiển thị && Danh mục hiển thị && Các bộ lọc tìm kiếm
         return isProductVisible && isCategoryVisible && matchesName && matchesPrice && matchesCategoryFilter;
     });
-    
-    // RẤT QUAN TRỌNG: Đặt lại trang về 1 sau khi tìm kiếm
     currentPage = 1; 
     renderClientProducts(filteredProducts);
     if (nameQuery !== '' || priceMin > 0 || priceMax !== Infinity) {
@@ -2376,7 +2262,7 @@ function searchProducts() {
 }
 
 // --- II.3. Giỏ hàng & Thanh toán ---
-function addToCart(productId, quantity = 1) { // Cập nhật hàm để chấp nhận số lượng
+function addToCart(productId, quantity = 1) {
     const product = mockProducts.find(p => p.id === productId);
     const cartItem = cart.find(item => item.id === productId);
 
@@ -2409,8 +2295,6 @@ function addToCart(productId, quantity = 1) { // Cập nhật hàm để chấp 
     }
     
     updateCartDisplay();
-    // Loại bỏ alert để không bị double alert khi gọi từ addToCartDetail
-    // alert(`Đã thêm ${qtyToAdd} x ${product.name} vào giỏ hàng!`); 
 }
 
 function updateCartDisplay() {
@@ -2487,19 +2371,14 @@ function goToCheckout() {
         return;
     }
     
-    closeCartModal();      // 1. Đóng Giỏ hàng Modal
-    renderCheckoutView();  // 2. Tải dữ liệu vào View Thanh toán
-    setActiveView('checkout'); // 3. Chuyển sang View Thanh toán
+    closeCartModal();
+    renderCheckoutView();
+    setActiveView('checkout');
 }
 
 function backToHomeFromCheckout() {
-    // 1. Chuyển view về Trang chủ
     setActiveView('home'); 
-    
-    // 2. Tắt chế độ checkout-mode trên body (setActiveView đã làm điều này, nhưng gọi lại để chắc chắn)
     document.body.classList.remove('checkout-mode'); 
-
-    // Tùy chọn: Đặt lại danh mục sidebar về 'Trang chủ'
     filterByCategory('all', false); 
 }
 
@@ -2600,26 +2479,19 @@ function toggleNewAddressInput(value) {
     const nameInput = document.getElementById('checkout-name');
     const phoneInput = document.getElementById('checkout-phone');
     const addressDisplay = document.getElementById('account-address-display');
-    
-    // Nếu chọn địa chỉ mới
     if (value === 'new-address') {
-        addressInput.value = ''; // Xóa địa chỉ cũ
+        addressInput.value = '';
         addressInput.placeholder = 'Vui lòng nhập địa chỉ giao hàng chi tiết, Tỉnh/Thành phố...';
         addressDisplay.style.display = 'none';
-        
-        // Bắt buộc người dùng nhập lại thông tin nhận hàng cho địa chỉ mới (tùy chọn)
         nameInput.value = '';
         phoneInput.value = '';
 
     } else {
-        // Sử dụng địa chỉ từ tài khoản
         addressInput.value = currentClient.address || 'Địa chỉ tài khoản chưa được thiết lập.';
         addressInput.placeholder = 'Địa chỉ từ Tài khoản';
         addressDisplay.style.display = 'block';
-        
-        // Điền lại thông tin tên/SĐT mặc định từ tài khoản
         nameInput.value = currentClient.name || '';
-        phoneInput.value = currentClient.phone || ''; // Cần có trường phone trong currentClient nếu muốn dùng
+        phoneInput.value = currentClient.phone || '';
     }
 }
 
@@ -2628,17 +2500,9 @@ function updateProfileView() {
     if (currentClient.isLoggedIn) {
         document.getElementById('current-username').textContent = currentClient.name;
         document.getElementById('profile-email').textContent = currentClient.email;
-        
-        // Lấy địa chỉ hiện tại hoặc thông báo chưa có
         const addressText = currentClient.address || 'Chưa có địa chỉ. Vui lòng cập nhật.';
-        
-        // 1. Cập nhật trường hiển thị
         document.getElementById('profile-address').textContent = addressText;
-        
-        // 2. Cập nhật trường input chỉnh sửa
         document.getElementById('edit-address-input').value = currentClient.address || ''; 
-
-        // Đảm bảo đang ở chế độ xem khi cập nhật
         toggleEditAddress(false); 
         
         renderOrderHistory();
@@ -2650,19 +2514,14 @@ function toggleEditAddress(isEditing = true) {
     const form = document.getElementById('address-edit-form');
     
     if (isEditing) {
-        // Chuyển sang chế độ chỉnh sửa
         view.style.display = 'none';
         form.style.display = 'block';
     } else {
-        // Hủy bỏ / Quay lại chế độ xem
         form.style.display = 'none';
         view.style.display = 'block';
-        // Reset lại giá trị input nếu người dùng nhấn Hủy
         document.getElementById('edit-address-input').value = currentClient.address || ''; 
     }
 }
-
-// TRONG file script.js (Thêm vào sau toggleEditAddress)
 
 function updateAddress() {
     const newAddress = document.getElementById('edit-address-input').value.trim();
@@ -2671,11 +2530,7 @@ function updateAddress() {
         alert("Địa chỉ không hợp lệ. Vui lòng nhập địa chỉ chi tiết (ít nhất 10 ký tự).");
         return;
     }
-
-    // 1. Cập nhật trong currentClient
     currentClient.address = newAddress;
-
-    // 2. Cập nhật trong mockClientAccounts (dữ liệu gốc)
     const clientIndex = mockClientAccounts.findIndex(c => c.id === currentClient.id);
     if (clientIndex !== -1) {
         mockClientAccounts[clientIndex].address = newAddress;
@@ -2683,12 +2538,8 @@ function updateAddress() {
     }
 
     saveClientAccountsToStorage();
-
-    // 3. Cập nhật UI và thông báo
     updateProfileView();
     alert("Địa chỉ mặc định đã được cập nhật thành công!");
-    
-    // 4. Quay lại chế độ xem
     toggleEditAddress(false); 
 }
 
@@ -2702,15 +2553,11 @@ function renderOrderHistory() {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Bạn chưa có đơn hàng nào.</td></tr>';
         return;
     }
-
-    // Sắp xếp theo ngày đặt hàng gần nhất
     clientOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     clientOrders.forEach(order => {
         let statusText = order.status;
         let statusClass = 'status-new';
-
-        // Ánh xạ trạng thái và màu sắc (Client view)
         if (statusText === 'new') { statusText = 'Mới đặt'; statusClass = 'status-new'; }
         else if (statusText === 'processing') { statusText = 'Đang xử lý'; statusClass = 'status-warning'; }
         else if (statusText === 'delivered') { statusText = 'Đã giao'; statusClass = 'status-success'; }
@@ -2733,8 +2580,6 @@ function renderOrderHistory() {
 function viewClientOrderDetails(orderId) {
     const order = mockOrders.find(o => o.id === orderId);
     if (!order) return;
-    
-    // Đảm bảo chỉ xem đơn hàng của mình
     if (order.customerId !== currentClient.id) {
         alert("Lỗi bảo mật: Không được phép xem đơn hàng này.");
         return;
@@ -2782,7 +2627,6 @@ function viewClientOrderDetails(orderId) {
         <h4 style="text-align: right; margin-top: 20px;">Tổng tiền: <span style="color: #E74C3C; font-weight: 700;">${order.total.toLocaleString('vi-VN')} đ</span></h4>
     `;
     
-    // Sử dụng Modal Chi tiết Sản phẩm chung (#product-detail-modal)
     document.getElementById('product-detail-content').innerHTML = detailsHtml;
     document.getElementById('product-detail-modal').classList.add('active'); 
 }
@@ -2792,11 +2636,11 @@ function togglePasswordVisibility(inputId, iconElement) {
     
     if (input.type === 'password') {
         input.type = 'text';
-        iconElement.classList.remove('fa-eye'); // Ẩn
-        iconElement.classList.add('fa-eye-slash'); // Hiện
+        iconElement.classList.remove('fa-eye');
+        iconElement.classList.add('fa-eye-slash');
     } else {
         input.type = 'password';
-        iconElement.classList.remove('fa-eye-slash'); // Hiện
-        iconElement.classList.add('fa-eye'); // Ẩn
+        iconElement.classList.remove('fa-eye-slash');
+        iconElement.classList.add('fa-eye');
     }
 }

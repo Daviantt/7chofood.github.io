@@ -1,4 +1,4 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -10,7 +10,7 @@
 </head>
 <body onclick="closeModalOutside(event)">
     <div id="app-container" class="container">
-        <!-- Khu vực ADMIN (Giữ nguyên) -->
+        <!-- Khu vực ADMIN -->
         <div id="admin-panel" class="admin-layout" style="display: none;">
             <div class="sidebar">
                 <div class="sidebar-header">
@@ -433,9 +433,34 @@
                         <div style="text-align: right; margin-top: 20px;">
                             <p style="font-size: 1.2em; font-weight: bold;">Tổng tiền: <span id="order-total-display" style="color: #E74C3C;">0 đ</span></p>
                             <div style="margin-top: 15px;">
-                                <button class="btn btn-primary" onclick="updateOrderStatusFromModal()">Cập nhật Trạng thái</button>
+                                <button class="btn btn-primary" onclick="openUpdateOrderStatusModal('${order.id}')">Cập nhật Trạng thái</button>
                                 <button class="btn btn-secondary" onclick="closeModal('admin-order-detail-modal')">Đóng</button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="update-order-status-modal" class="modal" onclick="closeModalOutside(event)">
+                    <div class="modal-content" style="max-width: 400px;">
+                        <span class="close-btn" onclick="closeModal('update-order-status-modal')">&times;</span>
+                        <h4>Cập nhật Trạng thái Đơn hàng</h4>
+                
+                        <p>Mã Đơn hàng: <strong id="update-order-id-display"></strong></p>
+                        <p>Trạng thái hiện tại: <span id="current-order-status-display" class="status-badge status-warning"></span></p>
+                
+                        <div class="filter-group" style="margin-top: 20px;">
+                            <label for="new-order-status">Chọn Trạng thái Mới:</label>
+                            <select id="new-order-status" style="width: 100%; padding: 8px; border-radius: 4px;">
+                                <option value="new">Mới đặt</option>
+                                <option value="processing">Đang xử lý</option>
+                                <option value="delivered">Đã giao</option>
+                                <option value="cancelled">Đã hủy</option>
+                            </select>
+                        </div>
+                
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="closeModal('update-order-status-modal')">Hủy</button>
+                            <button class="btn btn-primary" onclick="updateOrderStatusFromModal(true)">Lưu Trạng thái</button>
                         </div>
                     </div>
                 </div>
@@ -466,8 +491,7 @@
                         <img src="images/logo.jpg" alt="7Cho Food Logo">7Cho Food
                     </a>
                 </div>
-                
-                <!-- KHỐI TÌM KIẾM NÂNG CAO ĐÃ ĐƯỢC CHUYỂN LÊN HEADER -->
+
                 <div class="header-search">
                     <input type="text" id="search-name" placeholder="Tìm kiếm món ăn..." oninput="searchProducts()">
                     <select id="search-category" onchange="searchProducts()">
@@ -500,7 +524,6 @@
             
             <!-- KHỐI BỐ CỤC CHÍNH (SIDEBAR + CONTENT) -->
             <div class="main-client-layout">
-                <!-- THANH ĐIỀU HƯỚNG THEO LOẠI MÓN ĂN (SIDEBAR CỘT) -->
                 <div id="category-nav" class="category-sidebar">
                     <a href="#" class="category-link active" data-category="all" onclick="filterByCategory('all', true, event)">Trang chủ</a>
                     <a href="#" class="category-link" data-category="Món chay" onclick="filterByCategory('Món chay', true, event)">Món chay</a>
@@ -511,11 +534,8 @@
                     <a href="#" class="category-link" data-category="Nước uống" onclick="filterByCategory('Nước uống', true, event)">Nước uống</a>
                 </div>
 
-                <!-- KHU VỰC NỘI DUNG CHÍNH (HOMEPAGE, CART, PROFILE) -->
                 <div class="client-content-area">
-                    <!-- VIEW 1: HOME -->
                     <div id="home" class="client-view active">
-                        <!-- BANNER NỔI BẬT -->
                         <div id="hero-banner" class="slideshow-container"> 
     
                             <div class="mySlides fade active-slide">
@@ -551,7 +571,6 @@
                                 <span class="dot" onclick="currentSlide(3)"></span> 
                             </div>
                         </div>
-                        <!-- KHỐI DỊCH VỤ NỔI BẬT -->
                         <div id="service-cards">
                             <div class="service-card">
                                 <i class="fa-solid fa-truck-fast"></i>
@@ -570,7 +589,6 @@
                             </div>
                         </div>
 
-                        <!-- LƯỚI SẢN PHẨM SECTION (Điểm neo cho cuộn) -->
                         <div id="product-grid-section">
                             <h3>Thực đơn Hôm nay</h3>
                             <div id="product-grid" class="product-grid">
@@ -686,7 +704,6 @@
                         </div>
                     </div>
 
-                    <!-- VIEW 4: PROFILE/TÀI KHOẢN -->
                     <div id="profile" class="client-view active" style="padding: 20px;">
                         <header id="profile-header">
                             <span id="profile-back-btn" onclick="backToHomeFromProfile()">
@@ -734,7 +751,7 @@
         </div>
     </div>
     
-    <!-- Modal 1: Đăng nhập / Đăng ký (Làm tối màn hình) -->
+    <!-- Modal 1: Đăng nhập / Đăng ký -->
     <div id="auth-modal" class="modal" onclick="closeModalOutside(event)">
         <div class="modal-content">
             <span class="close-btn" onclick="closeAuthModal()">&times;</span>
@@ -771,15 +788,14 @@
         </div>
     </div>
 
-    <!-- Modal 2: Chi tiết Sản phẩm (Làm tối màn hình) -->
+    <!-- Modal 2: Chi tiết Sản phẩm -->
     <div id="product-detail-modal" class="modal" onclick="closeModalOutside(event)">
-        <!-- Nội dung modal-content sẽ được tạo bởi JS để không có lỗi cấu trúc -->
         <div class="modal-content" id="product-detail-content" style="max-width: 800px;">
             
         </div>
     </div>
     
-    <!-- Modal 3: GIỎ HÀNG (Sidebar Modal) -->
+    <!-- Modal 3: GIỎ HÀNG -->
     <div id="cart-modal" class="modal cart-modal-sidebar" onclick="closeModalOutside(event)">
         <div class="modal-content" style="max-width: 450px; padding: 0;">
             <div class="cart-header">
