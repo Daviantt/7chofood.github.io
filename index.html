@@ -1,0 +1,810 @@
+    <!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7Cho Food</title>
+    <link rel="icon" type="image/x-icon" href="images/logo.jpg">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body onclick="closeModalOutside(event)">
+    <div id="app-container" class="container">
+        <!-- Khu vực ADMIN (Giữ nguyên) -->
+        <div id="admin-panel" class="admin-layout" style="display: none;">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <a href="index.html?role=admin">
+                        <img src="images/logo.jpg" alt="7Cho Food Admin Logo"><br>
+                        7Cho Food
+                    </a>
+                </div>
+                <ul>
+                    <li><a href="#" data-tab="dashboard" class="admin-tab active"><i class="fas fa-tachometer-alt"></i> Trang tổng quan</a></li>
+                    <li><a href="#" data-tab="user-management" class="admin-tab"><i class="fas fa-users"></i> Khách hàng</a></li>
+                    <li><a href="#" data-tab="category-management" class="admin-tab"><i class="fas fa-tags"></i> Loại sản phẩm</a></li>
+                    <li><a href="#" data-tab="product-management" class="admin-tab"><i class="fas fa-boxes"></i> Sản phẩm</a></li>
+                    <li><a href="#" data-tab="import-management" class="admin-tab"><i class="fas fa-truck-loading"></i> Nhập hàng</a></li>
+                    <li><a href="#" data-tab="price-management" class="admin-tab"><i class="fas fa-dollar-sign"></i> Giá bán</a></li>
+                    <li><a href="#" data-tab="order-management" class="admin-tab"><i class="fas fa-clipboard-list"></i> Đơn hàng</a></li>
+                    <li><a href="#" data-tab="inventory-management" class="admin-tab"><i class="fas fa-warehouse"></i> Tồn kho</a></li>
+                    <li><a href="#" onclick="logout()" style="color: #e74c3c;"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a></li>
+                </ul>
+            </div>
+
+            <div class="main-content">
+
+                <div id="dashboard" class="tab-content active">
+                    <h3>📊 Tổng quan Hệ thống</h3>
+                    <div class="dashboard-cards">
+                        <div class="card">
+                            <h4>Tổng Khách hàng</h4>
+                            <p id="total-users">0</p>
+                        </div>
+                        <div class="card">
+                            <h4>Tổng Sản phẩm</h4>
+                            <p id="total-products">0</p>
+                        </div>
+                        <div class="card">
+                            <h4>Tổng Đơn hàng</h4>
+                            <p id="total-orders">0</p>
+                        </div>
+                        <div class="card">
+                            <h4>Tổng Doanh thu</h4>
+                            <p id="total-revenue">0 VND</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="user-management" class="tab-content">
+                    <h3>👥 Quản lý Khách hàng</h3>
+                    <div class="filter-section">
+                        <div class="search-input-wrapper"> 
+                            <i class="fas fa-search search-icon"></i>
+                            <input type="text" 
+                                   id="user-search-query" 
+                                   placeholder="Tìm kiếm theo Tên, Email..." 
+                                   oninput="searchUsers()">
+                        </div>
+                        
+                            <button class="btn btn-secondary" onclick="loadUsers()" title="Tải lại danh sách">
+                                <i class="fas fa-sync-alt"></i> 
+                            </button>
+                    </div>
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Tên KH</th>
+                                    <th>Email</th>
+                                    <th>SĐT</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="category-management" class="tab-content">
+                    <h3>Quản lý Loại Sản phẩm</h3>
+                    <div class="filter-section">
+                        <div class="input-group" style="display: flex; gap: 10px;">
+                            <input type="text" id="new-category-name" placeholder="Nhập tên loại sản phẩm mới" style="flex-grow: 1; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                            <button class="btn btn-success" onclick="addCategory()">
+                                <i class="fas fa-plus"></i> Thêm mới
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Tên Loại</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="category-list">
+                            </tbody>
+                    </table>
+                </div>
+
+                <div id="edit-category-modal" class="modal">
+                    <div class="modal-content">
+                        <h4>Sửa Loại Sản phẩm</h4>
+                        <input type="hidden" id="edit-category-id">
+                        <input type="text" id="edit-category-name" placeholder="Tên loại sản phẩm" style="width: 100%; padding: 10px; margin: 10px 0;">
+                        <div style="text-align: right;">
+                            <button class="btn btn-secondary" onclick="closeModal('edit-category-modal')">Hủy</button>
+                            <button class="btn btn-success" onclick="saveCategory()">Lưu</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="product-management" class="tab-content">
+                    <h3>📦 Quản lý Sản phẩm</h3>
+                    <div class="filter-section" style="display: flex; justify-content: space-between; align-items: center;">
+                        
+                        <div class="admin-search-bar" style="display: flex; gap: 10px; flex-grow: 1; max-width: 600px; margin-right: 20px;">
+                            
+                            <input type="text" id="admin-product-search" 
+                                placeholder="Tìm kiếm theo Tên hoặc Mã SP..." 
+                                oninput="searchAdminProducts()" 
+                                style="flex-grow: 1; padding: 10px; border-radius: 20px; border: 1px solid #ccc;">
+                                
+                            <select id="admin-category-filter" onchange="searchAdminProducts()" 
+                                    style="padding: 10px; border-radius: 20px; border: 1px solid #ccc;">
+                                <option value="all">Tất cả Loại</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-success" onclick="openProductModal('add')">
+                            <i class="fas fa-plus"></i> Thêm Sản phẩm
+                        </button>
+                    </div>
+                    <div id="admin-product-list" class="admin-product-grid">
+                    </div>
+                    <div class="pagination admin-pagination" style="display: none; justify-content: center; align-items: center; gap: 10px; margin-top: 30px;">
+                        <button class="btn btn-warning" id="admin-prev-page">Trang trước</button>
+                        <span id="admin-page-info" style="padding: 0 15px;">Trang 1 / 1</span>
+                        <button class="btn btn-warning" id="admin-next-page">Trang sau</button>
+                    </div>
+                </div>
+
+                <div id="product-modal" class="modal" onclick="closeModalOutside(event)">
+                    <div class="modal-content" style="max-width: 750px;">
+                        <span class="close-btn" onclick="closeModal('product-modal')">&times;</span>
+                        <h4 id="product-modal-title">Thêm Sản phẩm Mới</h4>
+                        
+                        <div class="modal-product-body" style="display: flex; gap: 30px;"> 
+                            <div class="modal-product-form" style="flex-basis: 70%;">
+                                
+                                <div class="filter-section" style="box-shadow: none; padding: 10px 0;">
+                                    <input type="hidden" id="product-id">
+                                    
+                                    <div class="filter-row">
+                                        <div class="filter-group"><label>Tên Sản phẩm:</label><input type="text" id="product-name" required></div>
+                                        <div class="filter-group"><label>Mã Sản phẩm (ID):</label><input type="text" id="product-code" placeholder="Ví dụ: SP061" required></div>
+                                    </div>
+                                    
+                                    <div class="filter-row">
+                                        <div class="filter-group">
+                                            <label>Loại Sản phẩm (Category):</label>
+                                            <select id="product-category" required></select>
+                                        </div>
+                                        <div class="filter-group">
+                                            <label>Loại chung (Type):</label>
+                                            <select id="product-type" required>
+                                                <option value="Món chính">Món chính</option><option value="Món nhẹ">Món nhẹ</option>
+                                                <option value="Đồ uống">Đồ uống</option><option value="Món khai vị">Món khai vị</option>
+                                                <option value="Món kèm">Món kèm</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="filter-row">
+                                        <div class="filter-group"><label>Giá Vốn (Cost - VND):</label><input type="number" id="product-cost" min="0" required></div>
+                                        <div class="filter-group">
+                                            <label>% Lợi nhuận (Tùy chỉnh):</label>
+                                            <input type="number" id="product-customMargin" placeholder="Để trống để dùng % chung" min="0">
+                                        </div>
+                                    </div>
+                                
+                                    <div class="filter-row">
+                                        <div class="filter-group"><label>Số lượng Tồn kho:</label><input type="number" id="product-stock" min="0" required></div>
+                                        <div class="filter-group"><label>Ngưỡng cảnh báo tồn kho thấp:</label><input type="number" id="product-lowStockThreshold" min="1" required></div>
+                                    </div>
+                                    
+                                    <div class="filter-row" style="flex-direction: column;">
+                                        <div class="filter-group" style="margin-top: 15px;">
+                                            <label>Mô tả:</label>
+                                            <textarea id="product-description" rows="3" required></textarea>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                
+                            <div class="modal-product-preview" style="flex-basis: 30%; text-align: center; padding-top: 10px;">
+                                <label>Xem trước Ảnh:</label>
+                                <img id="image-preview" src="https://placehold.co/200x200/cccccc/ffffff?text=No+Image" alt="Xem trước ảnh" style="width: 100%; max-width: 200px; height: auto; object-fit: cover; border-radius: 8px; margin-top: 10px; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1);" />
+                                <div id="product-image-upload-wrapper" style="margin-top: 15px; position: relative; overflow: hidden; display: inline-block; cursor: pointer;">
+        
+                                    <button class="btn btn-info btn-sm" type="button" style="cursor: pointer;">
+                                        <i class="fas fa-camera"></i> Chọn Ảnh Mới
+                                    </button>
+                                    
+                                    <input type="file" 
+                                           id="product-image-file" 
+                                           accept="image/*" 
+                                           onchange="previewProductImage(this.files[0])" 
+                                           style="position: absolute; top: 0; left: 0; opacity: 0; cursor: pointer; height: 100%; width: 100%;" />
+                                </div>
+                                <input type="hidden" id="product-image-url-current">
+                            </div>
+                            
+                        </div>
+                        
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="closeModal('product-modal')">Hủy</button>
+                            <button class="btn btn-success" id="save-product-btn" onclick="saveProduct()">Thêm</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="import-management" class="tab-content">
+                    <h3>📥 Quản lý Phiếu nhập hàng</h3>
+                    <div class="filter-section">
+                        <button class="btn btn-success" onclick="openAddImportModal()">
+                            <i class="fas fa-plus"></i> Thêm Phiếu nhập mới
+                        </button>
+                    </div>
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr><th>Mã PN</th><th>Ngày nhập</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr>
+                            </thead>
+                            <tbody id="import-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="import-detail-modal" class="modal" onclick="closeModalOutside(event)">
+                    <div class="modal-content" style="max-width: 650px;">
+                        <span class="close-btn" onclick="closeModal('import-detail-modal')">&times;</span>
+                        <h4 id="import-modal-title">Chi tiết Phiếu nhập</h4>
+                        
+                        <div id="import-modal-body" class="data-table" style="padding: 10px; margin-top: 15px;">
+                            </div>
+                        
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="closeModal('import-detail-modal')">Đóng</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="update-import-status-modal" class="modal" onclick="closeModalOutside(event)">
+                    <div class="modal-content" style="max-width: 400px;">
+                        <span class="close-btn" onclick="closeModal('update-import-status-modal')">&times;</span>
+                        <h4>Cập nhật Trạng thái Phiếu nhập</h4>
+                        
+                        <p>Mã Phiếu: <strong id="update-import-id-display"></strong></p>
+                        <p>Trạng thái hiện tại: <span id="current-import-status-display" class="status-badge status-warning">Đang giao</span></p>
+                
+                        <div class="filter-group" style="margin-top: 20px;">
+                            <label for="new-import-status">Chọn Trạng thái Mới:</label>
+                            <select id="new-import-status" style="width: 100%; padding: 8px; border-radius: 4px;">
+                                <option value="Đã nhập">Đã nhập (Cập nhật Tồn kho)</option>
+                                <option value="Đang giao">Đang giao</option>
+                                <option value="Đã hủy">Đã hủy</option>
+                            </select>
+                        </div>
+                
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="closeModal('update-import-status-modal')">Hủy</button>
+                            <button class="btn btn-primary" onclick="updateImportStatusFromModal()">Lưu Trạng thái</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="add-import-modal" class="modal" onclick="closeModalOutside(event)">
+                    <div class="modal-content" style="max-width: 850px;">
+                        <span class="close-btn" onclick="closeModal('add-import-modal')">&times;</span>
+                        <h4 id="add-import-modal-title">Thêm Phiếu nhập Hàng Mới</h4>
+                        
+                        <div class="modal-import-body">
+                            
+                            <div class="filter-section" style="box-shadow: none; padding: 10px 0;">
+                                <h5 style="color: #2980b9; margin-bottom: 10px;">Thông tin Chung</h5>
+                                <div class="filter-row">
+                                    <div class="filter-group"><label>Mã Phiếu nhập:</label><input type="text" id="import-id" placeholder="PN2025xxx" required disabled></div>
+                                    <div class="filter-group"><label>Ngày Nhập:</label><input type="date" id="import-date" value="${new Date().toISOString().slice(0, 10)}" required></div>
+                                </div>
+                                <p style="text-align: right; font-weight: bold; font-size: 1.1em;">Tổng tiền (Dự kiến): <span id="import-total-display" style="color: #E74C3C;">0 đ</span></p>
+                            </div>
+            
+                            <div class="filter-section" style="margin-top: 20px; box-shadow: none; padding: 10px 0;">
+                                <h5 style="color: #2980b9; margin-bottom: 10px;">Chi tiết Sản phẩm</h5>
+                                <div class="filter-row" style="align-items: flex-end; border: 1px dashed #ccc; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                                    <div class="filter-group"><label>Chọn Sản phẩm:</label><select id="import-product-select" required></select></div>
+                                    <div class="filter-group"><label>Số lượng Nhập:</label><input type="number" id="import-qty" min="1" value="1" required></div>
+                                    <div class="filter-group"><label>Giá Vốn Nhập (mỗi SP):</label><input type="number" id="import-cost" min="0" placeholder="Giá vốn" required></div>
+                                    <button class="btn btn-primary" onclick="addImportItem()">Thêm vào Phiếu</button>
+                                </div>
+            
+                                <div class="data-table">
+                                    <table>
+                                        <thead><tr><th>Mã SP</th><th>Tên SP</th><th>SL</th><th>Giá Vốn</th><th>Thành tiền</th><th>Thao tác</th></tr></thead>
+                                        <tbody id="import-items-list"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+            
+                        </div>
+                        
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="closeModal('add-import-modal')">Hủy</button>
+                            <button class="btn btn-success" onclick="saveNewImport()">Lưu Phiếu nhập</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="price-management" class="tab-content">
+                    <h3>💲 Quản lý Giá bán & Tỉ lệ Lợi nhuận</h3>
+                    <div class="filter-section">
+                        <h4>Thiết lập Tỉ lệ lợi nhuận (%)</h4>
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label>Loại Sản phẩm:</label>
+                                <select id="price-type-select"><option>Món chính</option></select>
+                            </div>
+                            <div class="filter-group">
+                                <label>% Lợi nhuận:</label>
+                                <input type="number" id="price-margin-input" placeholder="Ví dụ: 15" min="0">
+                            </div>
+                            <button class="btn btn-primary" onclick="updatePriceManagement()">Cập nhật</button>
+                        </div>
+                    </div>
+                    <div class="data-table" style="margin-top: 30px;">
+                        <h4>Tra cứu Giá bán Sản phẩm</h4>
+                        <table>
+                            <thead>
+                                <tr><th>Mã SP</th><th>Tên SP</th><th>Giá vốn</th><th>% Lợi nhuận</th><th>Giá bán</th><th>Thao tác</th></tr>
+                            </thead>
+                            <tbody id="price-list"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="edit-margin-modal" class="modal" onclick="closeModalOutside(event)">
+                    <div class="modal-content" style="max-width: 450px;">
+                        <span class="close-btn" onclick="closeModal('edit-margin-modal')">&times;</span>
+                        <h4>Sửa Tỉ lệ Lợi nhuận</h4>
+                        
+                        <input type="hidden" id="edit-margin-product-id">
+                        <p>Sản phẩm: <strong id="edit-margin-product-name"></strong></p>
+                        <p>Giá vốn hiện tại: <span id="edit-margin-product-cost"></span></p>
+            
+                        <div class="filter-group" style="margin-top: 20px;">
+                            <label>Tỉ lệ Lợi nhuận Mới (%):</label>
+                            <input type="number" id="edit-margin-value" min="0" placeholder="Ví dụ: 20">
+                        </div>
+            
+                        <div style="text-align: right; margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="closeModal('edit-margin-modal')">Hủy</button>
+                            <button class="btn btn-success" onclick="saveProductCustomMargin()">Lưu & Cập nhật Giá</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="order-management" class="tab-content">
+                    <h3>📜 Quản lý Đơn đặt hàng</h3>
+                    <div class="filter-section">
+                        <div class="filter-row" style="align-items: flex-end; gap: 20px;">
+                            <div class="filter-group">
+                                <label for="order-start-date">Ngày đặt từ:</label>
+                                <input type="date" id="order-start-date" onchange="filterAdminOrders()">
+                            </div>
+                            <div class="filter-group">
+                                <label for="order-end-date">Đến ngày:</label>
+                                <input type="date" id="order-end-date" onchange="filterAdminOrders()">
+                            </div>
+                            <div class="filter-group">
+                                <label for="order-status-filter">Tình trạng Đơn hàng:</label>
+                                <select id="order-status-filter" onchange="filterAdminOrders()">
+                                    <option value="all">Tất cả</option>
+                                    <option value="new">Mới đặt</option>
+                                    <option value="processing">Đang xử lý</option>
+                                    <option value="delivered">Đã giao</option>
+                                    <option value="cancelled">Đã hủy</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary" onclick="resetOrderFilters()">Xóa Bộ lọc</button>
+                        </div>
+                    </div>
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr><th>Mã ĐH</th><th>Ngày đặt</th><th>Khách hàng</th><th>Tổng tiền</th><th>Tình trạng</th><th>Thao tác</th></tr>
+                            </thead>
+                            <tbody id="admin-order-list">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="admin-order-detail-modal" class="modal" onclick="closeModalOutside(event)">
+                    <div class="modal-content" style="max-width: 800px;">
+                        <span class="close-btn" onclick="closeModal('admin-order-detail-modal')">&times;</span>
+                        
+                        <h4 id="order-modal-title">Chi tiết Đơn hàng <span id="order-id-display" style="color: #E74C3C;"></span></h4>
+                        
+                        <div id="order-detail-summary" style="margin-bottom: 20px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #f9f9f9;">
+                            </div>
+                
+                        <div class="data-table">
+                            <h5 style="padding: 10px 0; font-weight: 600;">Danh sách Sản phẩm</h5>
+                            <table>
+                                <thead><tr><th>Tên SP</th><th>SL</th><th>Giá</th><th>Thành tiền</th></tr></thead>
+                                <tbody id="order-products-list">
+                                </tbody>
+                            </table>
+                        </div>
+                
+                        <div style="text-align: right; margin-top: 20px;">
+                            <p style="font-size: 1.2em; font-weight: bold;">Tổng tiền: <span id="order-total-display" style="color: #E74C3C;">0 đ</span></p>
+                            <div style="margin-top: 15px;">
+                                <button class="btn btn-primary" onclick="updateOrderStatusFromModal()">Cập nhật Trạng thái</button>
+                                <button class="btn btn-secondary" onclick="closeModal('admin-order-detail-modal')">Đóng</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="inventory-management" class="tab-content">
+                    <h3>📦 Quản lý Tồn kho</h3>
+                    <div class="filter-section">
+                        <div id="low-stock-alert" class="alert alert-warning" style="display: none;"></div>
+                    </div>
+                    <div class="data-table">
+                        <table>
+                            <thead>
+                                <tr><th>Mã SP</th><th>Tên SP</th><th>Loại</th><th>Số lượng Tồn</th><th>Trạng thái</th><th>Thao tác</th></tr>
+                            </thead>
+                            <tbody id="inventory-list">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Khu vực CLIENT -->
+        <div id="client-panel" class="client-layout">
+            <header class="client-header">
+                <div class="logo">
+                    <a href="#" onclick="setActiveView('home'); filterByCategory('all', false, event);">
+                        <img src="images/logo.jpg" alt="7Cho Food Logo">7Cho Food
+                    </a>
+                </div>
+                
+                <!-- KHỐI TÌM KIẾM NÂNG CAO ĐÃ ĐƯỢC CHUYỂN LÊN HEADER -->
+                <div class="header-search">
+                    <input type="text" id="search-name" placeholder="Tìm kiếm món ăn..." oninput="searchProducts()">
+                    <select id="search-category" onchange="searchProducts()">
+                        <option value="all">Tất cả danh mục</option>
+                        <option value="Món mặn">Món mặn</option>
+                        <option value="Món chay">Món chay</option>
+                        <option value="Món lẩu">Món lẩu</option>
+                        <option value="Món ăn vặt">Món ăn vặt</option>
+                        <option value="Món tráng miệng">Món tráng miệng</option>
+                        <option value="Nước uống">Nước uống</option>
+                    </select>
+                    
+                    <input type="number" id="search-price-min" placeholder="Giá từ" oninput="searchProducts()" style="width: 100px;">
+                    <input type="number" id="search-price-max" placeholder="Giá đến" oninput="searchProducts()" style="width: 100px;">
+                </div>
+                
+                <nav>
+                    <a href="#" data-view="cart" onclick="showCartModal()">🛒 Giỏ hàng (<span id="cart-count">0</span>)</a>
+                    <div class="nav-dropdown">
+                        <a href="#" id="user-info">👤 Tài khoản</a>
+                        <div class="dropdown-content">
+                            <a href="#" id="opt-login" onclick="showAuthModal('login', event)">Đăng nhập</a>
+                            <a href="#" id="opt-register" onclick="showAuthModal('register', event)">Đăng ký</a>
+                            <a href="#" id="opt-profile" onclick="setActiveView('profile')" style="display:none;">Quản lý Tài khoản</a>
+                            <a href="#" id="opt-logout" onclick="clientLogout(event)" style="display:none;">Đăng xuất</a>
+                        </div>
+                    </div>
+                </nav>
+            </header>
+            
+            <!-- KHỐI BỐ CỤC CHÍNH (SIDEBAR + CONTENT) -->
+            <div class="main-client-layout">
+                <!-- THANH ĐIỀU HƯỚNG THEO LOẠI MÓN ĂN (SIDEBAR CỘT) -->
+                <div id="category-nav" class="category-sidebar">
+                    <a href="#" class="category-link active" data-category="all" onclick="filterByCategory('all', true, event)">Trang chủ</a>
+                    <a href="#" class="category-link" data-category="Món chay" onclick="filterByCategory('Món chay', true, event)">Món chay</a>
+                    <a href="#" class="category-link" data-category="Món mặn" onclick="filterByCategory('Món mặn', true, event)">Món mặn</a>
+                    <a href="#" class="category-link" data-category="Món lẩu" onclick="filterByCategory('Món lẩu', true, event)">Món lẩu</a>
+                    <a href="#" class="category-link" data-category="Món ăn vặt" onclick="filterByCategory('Món ăn vặt', true, event)">Món ăn vặt</a>
+                    <a href="#" class="category-link" data-category="Món tráng miệng" onclick="filterByCategory('Món tráng miệng', true, event)">Món tráng miệng</a>
+                    <a href="#" class="category-link" data-category="Nước uống" onclick="filterByCategory('Nước uống', true, event)">Nước uống</a>
+                </div>
+
+                <!-- KHU VỰC NỘI DUNG CHÍNH (HOMEPAGE, CART, PROFILE) -->
+                <div class="client-content-area">
+                    <!-- VIEW 1: HOME -->
+                    <div id="home" class="client-view active">
+                        <!-- BANNER NỔI BẬT -->
+                        <div id="hero-banner" class="slideshow-container"> 
+    
+                            <div class="mySlides fade active-slide">
+                                <div class="slide-content">
+                                    <h2>Ưu đãi Món ngon mỗi ngày!</h2>
+                                    <p>Giảm 15% tất cả Phở Bò Đặc Biệt và Bún Riêu Cua khi đặt trước 10h sáng.</p>
+                                    <button class="btn btn-success" onclick="document.querySelector('#product-grid-section').scrollIntoView({behavior: 'smooth'})">Xem Menu Ngay</button>
+                                </div>
+                                </div>
+                            
+                            <div class="mySlides fade">
+                                <div class="slide-content">
+                                    <h2>🔥 Giảm 20% các món Lẩu!</h2>
+                                    <p>Đặt Lẩu Thái chua cay hoặc Lẩu Nấm tại nhà, tặng kèm 1 chai nước ngọt.</p>
+                                    <button class="btn btn-warning" onclick="filterByCategory('Món lẩu', true)">Đặt Lẩu Ngay</button>
+                                </div>
+                            </div>
+                            
+                            <div class="mySlides fade">
+                                <div class="slide-content">
+                                    <h2>🌱 Thực đơn Thuần Chay</h2>
+                                    <p>Khám phá các món ăn chay mới từ nguyên liệu hữu cơ, thanh đạm, tốt cho sức khỏe.</p>
+                                    <button class="btn btn-primary" onclick="filterByCategory('Món chay', true)">Xem Món Chay</button>
+                                </div>
+                            </div>
+                        
+                            <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+                            <a class="next" onclick="plusSlides(1)">&#10095;</a>
+                            
+                            <div class="dots-container">
+                                <span class="dot active" onclick="currentSlide(1)"></span> 
+                                <span class="dot" onclick="currentSlide(2)"></span> 
+                                <span class="dot" onclick="currentSlide(3)"></span> 
+                            </div>
+                        </div>
+                        <!-- KHỐI DỊCH VỤ NỔI BẬT -->
+                        <div id="service-cards">
+                            <div class="service-card">
+                                <i class="fa-solid fa-truck-fast"></i>
+                                <h4>Giao hàng siêu tốc</h4>
+                                <p>Đảm bảo món ăn nóng sốt trong 30 phút.</p>
+                            </div>
+                            <div class="service-card">
+                                <i class="fa-solid fa-utensils"></i>
+                                <h4>Nguyên liệu tươi sạch</h4>
+                                <p>Đồ ăn được chế biến từ nông sản hữu cơ.</p>
+                            </div>
+                            <div class="service-card">
+                                <i class="fa-solid fa-headset"></i>
+                                <h4>Hỗ trợ 24/7</h4>
+                                <p>Đội ngũ chăm sóc khách hàng luôn sẵn sàng.</p>
+                            </div>
+                        </div>
+
+                        <!-- LƯỚI SẢN PHẨM SECTION (Điểm neo cho cuộn) -->
+                        <div id="product-grid-section">
+                            <h3>Thực đơn Hôm nay</h3>
+                            <div id="product-grid" class="product-grid">
+                            </div>
+                            <div class="pagination">
+                                <button class="btn btn-warning" id="client-prev-page" onclick="changePage('prev')">Trang trước</button>
+                                <span id="client-page-info" style="padding: 0 15px;">Trang 1 / 1</span>
+                                <button class="btn btn-warning" id="client-next-page" onclick="changePage('next')">Trang sau</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <footer class="client-footer">
+                        <div class="footer-section contact-info">
+                            <h4>Liên hệ</h4>
+                            <p><i class="fas fa-map-marker-alt"></i> 123 Đường 7Cho, Quận 1, TP.HCM</p>
+                            <p><i class="fas fa-phone"></i> 090-123-4567</p>
+                            <p><i class="fas fa-envelope"></i> hotro@7chofood.vn</p>
+                        </div>
+                        <div class="footer-section links">
+                            <h4>Chính sách</h4>
+                            <ul>
+                                <li><a href="#">Chính sách bảo mật</a></li>
+                                <li><a href="#">Điều khoản sử dụng</a></li>
+                                <li><a href="#">Chính sách giao hàng</a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-section social">
+                            <h4>Theo dõi chúng tôi</h4>
+                            <a href="#"><i class="fab fa-facebook-f"></i></a>
+                            <a href="#"><i class="fab fa-instagram"></i></a>
+                            <a href="#"><i class="fab fa-youtube"></i></a>
+                        </div>
+                        <div class="footer-bottom">
+                            <p>&copy; 2025 7Cho Food. Đã đăng ký bản quyền.</p>
+                        </div>
+                    </footer>
+
+                    <div id="checkout" class="client-view">
+                        <header id="checkout-header">
+                            <span id="checkout-back-btn" onclick="backToHomeFromCheckout()">
+                                <i class="fas fa-arrow-left"></i>
+                            </span>
+                            <h3 style="margin: 0; font-size: 1.8em; color: #E74C3C;">Thanh toán Đơn hàng</h3>
+                        </header>
+                        
+                        <div class="checkout-layout"> <div class="checkout-left-column">
+                                
+                                <div class="filter-section">
+                                    <h4 style="color: #E74C3C; margin-bottom: 15px;">Thông tin Người nhận</h4>
+                                    <div class="filter-row" style="flex-direction: column;">
+                                
+                                        <div class="filter-group" style="min-width: 100%;">
+                                            <label for="delivery-address-type">Chọn Địa chỉ Giao hàng:</label>
+                                            <select id="delivery-address-type" onchange="toggleNewAddressInput(this.value)">
+                                                <option value="account-default">Sử dụng Địa chỉ Từ Tài khoản</option>
+                                                <option value="new-address">Nhập Địa chỉ Giao hàng MỚI</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="filter-group">
+                                            <label for="checkout-name">Họ và Tên Người nhận:</label>
+                                            <input type="text" id="checkout-name" placeholder="Tên người nhận" required>
+                                        </div>
+                                        <div class="filter-group">
+                                            <label for="checkout-phone">Số Điện Thoại:</label>
+                                            <input type="tel" id="checkout-phone" placeholder="Số điện thoại" required>
+                                        </div>
+                                        
+                                        <div class="filter-group" style="min-width: 100%;">
+                                            <label for="checkout-address">Địa chỉ Giao hàng Chi tiết:</label>
+                                            <textarea id="checkout-address" rows="3" placeholder="Địa chỉ chi tiết" required></textarea>
+                                        </div>
+                                        
+                                        <div id="account-address-display" class="alert alert-warning" style="display: block; margin-top: 15px;">
+                                            **Địa chỉ Mặc định:** <span id="default-address-text"></span>
+                                        </div>
+                                
+                                    </div>
+                                </div>
+                    
+                                <div class="filter-section" style="margin-top: 30px;">
+                                    <h4 style="color: #E74C3C; margin-bottom: 15px;">Phương thức Thanh toán</h4>
+                                    <select id="checkout-payment-method" style="padding: 10px; width: 100%; border: 1px solid #ccc; border-radius: 4px;">
+                                        <option value="cod">Thanh toán tiền mặt khi nhận hàng (COD)</option>
+                                        <option value="transfer">Chuyển khoản ngân hàng</option>
+                                        <option value="online">Thanh toán trực tuyến (Mô phỏng)</option>
+                                    </select>
+                                </div>
+                            </div>
+                    
+                            <div class="checkout-right-column">
+                                
+                                <div class="data-table" style="margin-top: 30px;">
+                                    <h4 style="margin-bottom: 15px;">Chi tiết Đơn hàng (<span id="checkout-total-items">0</span> sản phẩm)</h4>
+                                    <table>
+                                        <thead>
+                                            <tr><th>Sản phẩm</th><th>SL</th><th>Giá</th><th>Thành tiền</th></tr>
+                                        </thead>
+                                        <tbody id="checkout-order-details">
+                                            </tbody>
+                                    </table>
+                                    <h4 style="padding: 15px; text-align: right; background: #f9f9f9; border-top: 1px solid #ddd;">
+                                        Tổng tiền thanh toán: <span id="checkout-total-amount" style="color: #E74C3C; font-weight: 700;">0 đ</span>
+                                    </h4>
+                                </div>
+                                
+                                <div style="text-align: right; margin-top: 25px;">
+                                    <button class="btn btn-primary btn-lg" onclick="placeOrder()">Xác nhận Đặt hàng</button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+
+                    <!-- VIEW 4: PROFILE/TÀI KHOẢN -->
+                    <div id="profile" class="client-view active" style="padding: 20px;">
+                        <header id="profile-header">
+                            <span id="profile-back-btn" onclick="backToHomeFromProfile()">
+                                <i class="fas fa-arrow-left"></i>
+                            </span>
+                            <h3 style="margin: 0; font-size: 1.8em; color: #E74C3C;">Tài khoản của bạn</h3>
+                        </header>
+                        
+                        <div style="padding-top: 50px;">
+                            <h4 id="current-username" style="color: #E74C3C; margin-bottom: 20px;"></h4>
+                            
+                            <div class="filter-section" style="margin-top: 20px;">
+                                <h3>👤 Hồ sơ Khách hàng</h3> 
+                                <h4 style="color: #2980b9;">Thông tin Tài khoản</h4>
+                                
+                                <div id="address-view" style="margin-top: 15px;">
+                                    <p><strong>Email:</strong> <span id="profile-email"></span></p>
+                                    <p><strong>Địa chỉ Mặc định:</strong> <span id="profile-address"></span></p>
+                                    <button class="btn btn-primary btn-sm" onclick="toggleEditAddress(true)" style="margin-top: 10px;">Chỉnh sửa Địa chỉ</button>
+                                </div>
+                    
+                                <div id="address-edit-form" style="display: none; margin-top: 15px;">
+                                    <label>Địa chỉ Mới:</label>
+                                    <input type="text" id="edit-address-input" style="width: 100%; padding: 8px; margin-bottom: 10px;">
+                                    <button class="btn btn-success btn-sm" onclick="updateAddress()">Lưu Địa chỉ</button>
+                                    <button class="btn btn-danger btn-sm" onclick="toggleEditAddress(false)">Hủy</button>
+                                </div>
+                            </div>
+                            
+                            <div class="data-table" style="margin-top: 30px;">
+                                <h4 style="color: #2980b9;">Lịch sử Đơn hàng</h4>
+                                <table>
+                                    <thead>
+                                        <tr><th>Mã ĐH</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Tình trạng</th><th>Thao tác</th></tr>
+                                    </thead>
+                                    <tbody id="client-order-history">
+                                        <tr><td colspan="5" style="text-align: center;">Vui lòng Đăng nhập để xem lịch sử.</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 1: Đăng nhập / Đăng ký (Làm tối màn hình) -->
+    <div id="auth-modal" class="modal" onclick="closeModalOutside(event)">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeAuthModal()">&times;</span>
+            <div id="auth-forms">
+                <!-- Form Đăng nhập -->
+                <div id="login-form-container" class="auth-box"> 
+                    <h3>Đăng nhập</h3>
+                    <input type="text" id="client-login-email" placeholder="Email" required>
+                    <div class="password-wrapper">
+                        <input type="password" id="client-login-password" placeholder="Mật khẩu" required>
+                        <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('client-login-password', this)"></i>
+                    </div>
+                    <button class="btn btn-primary" onclick="clientLoginModal()">Đăng nhập</button>
+                    <p class="switch-auth" onclick="switchAuthModal('register')">Chưa có tài khoản? Đăng ký ngay.</p>
+                </div>
+    
+                <!-- Form Đăng ký -->
+                <div id="register-form-container" class="auth-box">
+                    <h3>Đăng ký Tài khoản</h3>
+                    <input type="text" id="client-register-name" placeholder="Họ và tên" required>
+                    <input type="email" id="client-register-email" placeholder="Email" required>
+                    <div class="password-wrapper">
+                        <input type="password" id="client-register-password" placeholder="Mật khẩu" required>
+                        <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('client-register-password', this)"></i>
+                    </div>
+                    <div class="password-wrapper">
+                        <input type="password" id="client-register-confirm-password" placeholder="Xác nhận Mật khẩu" required>
+                        <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('client-register-confirm-password', this)"></i>
+                    </div>
+                    <button class="btn btn-success" onclick="clientRegisterModal()">Đăng ký</button>
+                    <p class="switch-auth" onclick="switchAuthModal('login')">Đã có tài khoản? Đăng nhập.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 2: Chi tiết Sản phẩm (Làm tối màn hình) -->
+    <div id="product-detail-modal" class="modal" onclick="closeModalOutside(event)">
+        <!-- Nội dung modal-content sẽ được tạo bởi JS để không có lỗi cấu trúc -->
+        <div class="modal-content" id="product-detail-content" style="max-width: 800px;">
+            
+        </div>
+    </div>
+    
+    <!-- Modal 3: GIỎ HÀNG (Sidebar Modal) -->
+    <div id="cart-modal" class="modal cart-modal-sidebar" onclick="closeModalOutside(event)">
+        <div class="modal-content" style="max-width: 450px; padding: 0;">
+            <div class="cart-header">
+                <h3>🛒 Giỏ hàng của bạn</h3>
+                <span class="close-btn" onclick="closeCartModal()">&times;</span>
+            </div>
+
+            <div class="cart-body">
+                <div id="cart-details-table">
+                </div>
+                
+                <div id="checkout-section">
+                    <div style="text-align: right; margin-top: 20px; padding: 10px 0;">
+                        <button class="btn btn-success btn-lg" onclick="goToCheckout()">Thanh toán</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="inventory-history-modal" class="modal" onclick="closeModalOutside(event)">
+        <div class="modal-content" id="inventory-history-content" style="max-width: 850px;">
+            </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

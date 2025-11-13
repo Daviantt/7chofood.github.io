@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập Quản trị</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Tùy chỉnh CSS cho trang đăng nhập */
+        body { display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f4f4f4; }
+        .login-container { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 350px; }
+        .login-container h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
+        .login-container button { width: 100%; padding: 10px; background: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; transition: 0.3s; }
+        .login-container button:hover { background: #2980b9; }
+        .password-wrapper {
+        position: relative; /* Bắt buộc để neo icon */
+        margin-bottom: 15px; /* Khoảng cách giữa các trường */
+        }
+
+        .login-container input[type="text"], 
+        .login-container .password-wrapper input { 
+            width: 100%; 
+            padding: 10px; 
+            margin-bottom: 15px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; /* ✅ Thêm lại Border Radius */
+            box-sizing: border-box; 
+        }
+
+        .password-wrapper input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc; /* ✅ Thêm lại Border */
+            border-radius: 4px; /* ✅ Thêm lại Border Radius */
+            box-sizing: border-box;
+            /* Đảm bảo input có đủ padding để icon không đè lên chữ */
+            padding-right: 40px !important; 
+            margin-bottom: 0 !important; /* Xóa margin cũ */
+        }
+        
+        .toggle-password {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #95a5a6;
+            font-size: 1.1em;
+            transition: color 0.2s;
+            z-index: 2; /* Đảm bảo icon nằm trên input */
+        }
+
+        .toggle-password:hover {
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Đăng nhập Quản trị</h2>
+        <form onsubmit="adminLogin(event)">
+            <input type="text" id="admin-username" placeholder="Tên đăng nhập" required>
+            <div class="password-wrapper">
+                <input type="password" id="admin-password" placeholder="Mật khẩu Admin">
+                <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('admin-password', this)"></i>
+            </div>
+            <button type="submit">Đăng nhập</button>
+        </form>
+    </div>
+    <script>
+        function togglePasswordVisibility(inputId, iconElement) {
+            const input = document.getElementById(inputId);
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                iconElement.classList.remove('fa-eye');
+                iconElement.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                iconElement.classList.remove('fa-eye-slash');
+                iconElement.classList.add('fa-eye');
+            }
+        }
+        function adminLogin(e) {
+            e.preventDefault();
+            // Logic đăng nhập đơn giản cho demo
+            const user = document.getElementById('admin-username').value;
+            const pass = document.getElementById('admin-password').value;
+            if (user === 'admin' && pass === '123456') {
+                alert('Đăng nhập Admin thành công!');
+                window.location.href = 'index.html?role=admin'; // Chuyển sang giao diện Admin
+            } else {
+                alert('Sai tên đăng nhập hoặc mật khẩu!');
+            }
+        }
+    </script>
+</body>
+</html>
