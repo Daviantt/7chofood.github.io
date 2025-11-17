@@ -33,7 +33,6 @@
             </div>
 
             <div class="main-content">
-
                 <div id="dashboard" class="tab-content active">
                     <h3>📊 Tổng quan Hệ thống</h3>
                     <div class="dashboard-cards">
@@ -61,15 +60,11 @@
                     <div class="filter-section">
                         <div class="search-input-wrapper"> 
                             <i class="fas fa-search search-icon"></i>
-                            <input type="text" 
-                                   id="user-search-query" 
-                                   placeholder="Tìm kiếm theo Tên, Email..." 
-                                   oninput="searchUsers()">
+                            <input type="text" id="user-search-query" placeholder="Tìm kiếm theo Tên, Email..." oninput="searchUsers()">
                         </div>
-                        
-                            <button class="btn btn-secondary" onclick="loadUsers()" title="Tải lại danh sách">
-                                <i class="fas fa-sync-alt"></i> 
-                            </button>
+                        <button class="btn btn-secondary" onclick="loadUsers()" title="Tải lại danh sách">
+                            <i class="fas fa-sync-alt"></i> 
+                        </button>
                     </div>
                     <div class="data-table">
                         <table>
@@ -276,7 +271,7 @@
                         <div class="filter-group" style="margin-top: 20px;">
                             <label for="new-import-status">Chọn Trạng thái Mới:</label>
                             <select id="new-import-status" style="width: 100%; padding: 8px; border-radius: 4px;">
-                                <option value="Đã nhập">Đã nhập (Cập nhật Tồn kho)</option>
+                                <option value="Đã nhập">Đã nhập</option>
                                 <option value="Đang giao">Đang giao</option>
                                 <option value="Đã hủy">Đã hủy</option>
                             </select>
@@ -451,10 +446,10 @@
                         <div class="filter-group" style="margin-top: 20px;">
                             <label for="new-order-status">Chọn Trạng thái Mới:</label>
                             <select id="new-order-status" style="width: 100%; padding: 8px; border-radius: 4px;">
-                                <option value="new">Mới đặt</option>
-                                <option value="processing">Đang xử lý</option>
-                                <option value="delivered">Đã giao</option>
-                                <option value="cancelled">Đã hủy</option>
+                                <option value="Mới đặt">Mới đặt</option>
+                                <option value="Đang xử lý">Đang xử lý</option>
+                                <option value="Đã giao">Đã giao</option>
+                                <option value="Đã hủy">Đã hủy</option>
                             </select>
                         </div>
                 
@@ -467,6 +462,33 @@
 
                 <div id="inventory-management" class="tab-content">
                     <h3>📦 Quản lý Tồn kho</h3>
+                    <div class="filter-section">
+                        <div class="filter-row" style="align-items: flex-end; gap: 20px;">
+                            <div class="filter-group" style="flex-grow: 1;">
+                                <input type="text" id="inventory-search-query" 
+                                    placeholder="Tìm kiếm theo Tên hoặc Mã SP..." 
+                                    oninput="searchInventory()" 
+                                    style="width: 100%; padding: 10px; border-radius: 20px; border: 1px solid #ccc; box-sizing: border-box;">
+                            </div>
+                            <div class="filter-group" style="flex-grow: 0; min-width: 150px;">
+                                <select id="inventory-category-filter" onchange="searchInventory()" 
+                                        style="padding: 10px; border-radius: 20px; border: 1px solid #ccc; width: 100%;">
+                                    <option value="all">Tất cả Loại</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label for="inventory-start-date">Ngày giao dịch từ:</label>
+                                <input type="date" id="inventory-start-date" onchange="searchInventory()">
+                            </div>
+                            <div class="filter-group">
+                                <label for="inventory-end-date">Đến ngày:</label>
+                                <input type="date" id="inventory-end-date" onchange="searchInventory()">
+                            </div>
+                            <button class="btn btn-secondary" onclick="resetInventoryFilters()" title="Xóa Bộ lọc">
+                                <i class="fas fa-sync-alt"></i> 
+                            </button>
+                        </div>
+                    </div>
                     <div class="filter-section">
                         <div id="low-stock-alert" class="alert alert-warning" style="display: none;"></div>
                     </div>
@@ -635,12 +657,11 @@
                             <h3 style="margin: 0; font-size: 1.8em; color: #E74C3C;">Thanh toán Đơn hàng</h3>
                         </header>
                         
-                        <div class="checkout-layout"> <div class="checkout-left-column">
-                                
+                        <div class="checkout-layout">
+                            <div class="checkout-left-column">    
                                 <div class="filter-section">
                                     <h4 style="color: #E74C3C; margin-bottom: 15px;">Thông tin Người nhận</h4>
                                     <div class="filter-row" style="flex-direction: column;">
-                                
                                         <div class="filter-group" style="min-width: 100%;">
                                             <label for="delivery-address-type">Chọn Địa chỉ Giao hàng:</label>
                                             <select id="delivery-address-type" onchange="toggleNewAddressInput(this.value)">
@@ -675,7 +696,7 @@
                                     <select id="checkout-payment-method" style="padding: 10px; width: 100%; border: 1px solid #ccc; border-radius: 4px;">
                                         <option value="cod">Thanh toán tiền mặt khi nhận hàng (COD)</option>
                                         <option value="transfer">Chuyển khoản ngân hàng</option>
-                                        <option value="online">Thanh toán trực tuyến (Mô phỏng)</option>
+                                        <option value="online">Thanh toán trực tuyến</option>
                                     </select>
                                 </div>
                             </div>
@@ -689,7 +710,7 @@
                                             <tr><th>Sản phẩm</th><th>SL</th><th>Giá</th><th>Thành tiền</th></tr>
                                         </thead>
                                         <tbody id="checkout-order-details">
-                                            </tbody>
+                                        </tbody>
                                     </table>
                                     <h4 style="padding: 15px; text-align: right; background: #f9f9f9; border-top: 1px solid #ddd;">
                                         Tổng tiền thanh toán: <span id="checkout-total-amount" style="color: #E74C3C; font-weight: 700;">0 đ</span>
@@ -704,7 +725,7 @@
                         </div>
                     </div>
 
-                    <div id="profile" class="client-view active" style="padding: 20px;">
+                    <div id="profile" class="client-view" style="padding: 20px;">
                         <header id="profile-header">
                             <span id="profile-back-btn" onclick="backToHomeFromProfile()">
                                 <i class="fas fa-arrow-left"></i>
@@ -721,8 +742,19 @@
                                 
                                 <div id="address-view" style="margin-top: 15px;">
                                     <p><strong>Email:</strong> <span id="profile-email"></span></p>
-                                    <p><strong>Địa chỉ Mặc định:</strong> <span id="profile-address"></span></p>
-                                    <button class="btn btn-primary btn-sm" onclick="toggleEditAddress(true)" style="margin-top: 10px;">Chỉnh sửa Địa chỉ</button>
+                                    <p><strong>Số Điện Thoại:</strong> <span id="profile-phone"></span>
+                                        <button class="btn btn-info btn-sm" onclick="toggleEditPhone(true)" style="margin-left: 10px;">Sửa SĐT</button>
+                                    </p>
+                                    <p><strong>Địa chỉ Mặc định:</strong> <span id="profile-address"></span>
+                                        <button class="btn btn-info btn-sm" onclick="toggleEditAddress(true)" style="margin-top: 10px;">Chỉnh sửa Địa chỉ</button>
+                                    </p>
+                                </div>
+
+                                <div id="phone-edit-form" style="display: none; margin-top: 15px;">
+                                    <label>Số Điện Thoại Mới:</label>
+                                    <input type="tel" id="edit-phone-input" style="width: 100%; padding: 8px; margin-bottom: 10px;" placeholder="Ví dụ: 0901234567">
+                                    <button class="btn btn-success btn-sm" onclick="updatePhone()">Lưu SĐT</button>
+                                    <button class="btn btn-danger btn-sm" onclick="toggleEditPhone(false)">Hủy</button>
                                 </div>
                     
                                 <div id="address-edit-form" style="display: none; margin-top: 15px;">

@@ -595,6 +595,20 @@ th, td {
 }
 
 
+.fade {
+    animation-name: fade;
+    animation-duration: 1.5s;
+}
+
+@keyframes fade {
+    from {opacity: .4} 
+    to {opacity: 1}
+}
+
+.mySlides.active-slide {
+    display: block;
+}
+
 .slide-content {
     color: white;
     padding: 50px 40px;
@@ -668,19 +682,6 @@ th, td {
     background-color: #717171;
 }
 
-.fade {
-    animation-name: fade;
-    animation-duration: 1.5s;
-}
-
-@keyframes fade {
-    from {opacity: .4} 
-    to {opacity: 1}
-}
-
-.mySlides.active-slide {
-    display: block;
-}
 
 /* --- SERVICE CARDS --- */
 #service-cards {
@@ -1017,7 +1018,7 @@ th, td {
     width: 450px !important;
     height: 100%;
     margin: 0;
-    border-radius: 0;
+    border-radius: 0px;
     animation: slideInRight 0.3s forwards;
     display: flex;
     flex-direction: column;
@@ -1496,6 +1497,16 @@ body.profile-mode .client-content-area {
     color: #856404;
 }
 
+@media (max-width: 1180px){
+    .main-client-layout {
+        padding-top: 120px;
+    }
+
+    .category-sidebar {
+        top: 120px;
+    }
+}
+
 /* Responsive cho Client view */
 @media (max-width: 1024px) {
     .client-header {
@@ -1504,12 +1515,12 @@ body.profile-mode .client-content-area {
     
     .main-client-layout {
         padding-left: 180px; 
-        padding-top: 75px;
+        padding-top: 150px;
     }
 
     .category-sidebar {
         width: 180px;
-        top: 75px;
+        top: 150px;
     }
 
     .client-content-area {
@@ -1578,7 +1589,7 @@ body.profile-mode .client-content-area {
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .client-header {
         padding: 10px 15px;
         flex-direction: column;
